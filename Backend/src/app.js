@@ -58,6 +58,7 @@ app.use('/api/health', require('./routes/health'));
 // app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/opportunities', require('./routes/opportunities'));
 // app.use('/api/comments', require('./routes/comments'));
+app.use('/api', require('./routes'));
 
 // ── Error Handler ─────────────────────────────────────────────────────────────
 // Must be last — catches all errors from routes above
