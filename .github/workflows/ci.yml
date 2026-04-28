@@ -18,7 +18,7 @@ jobs:
         run: bash scripts/setup.sh
 
       - name: Install backend deps
-        run: cd backend && npm install
+        run: cd backend && npm install --watchAll=false
 
-      - name: Run tests
-        run: cd backend && npm test
+      - name: Run backend tests
+        run: cd backend && npx jest --watchAll=false
