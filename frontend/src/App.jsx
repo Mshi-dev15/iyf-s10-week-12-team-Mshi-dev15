@@ -1,22 +1,21 @@
 import { Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout/Layout'
+import Home from './pages/Home'
+import Posts from './pages/Posts'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import ProtectedRoute from './components/ProtectedRoute'
+//import ProtectedRoute from './components/ProtectedRoute'
 
-function App() {
+export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       
-      {/* Protected routes go here */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <h1>🇰🇪 CommunityHub Home — Coming Soon</h1>
-        </ProtectedRoute>
-      } />
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="posts" element={<Posts />} />
+      </Route>
     </Routes>
   )
 }
-
-export default App

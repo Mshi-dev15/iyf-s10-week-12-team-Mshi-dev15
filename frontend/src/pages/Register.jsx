@@ -1,6 +1,4 @@
 // frontend/src/pages/Register.jsx
-// F5 Task — Registration form with role selection and location fields
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -13,12 +11,7 @@ const COUNTIES = [
 
 export default function Register() {
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        role: 'user',
-        county: '',
-        town: ''
+        name: '', email: '', password: '', role: 'user', county: '', town: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -34,7 +27,6 @@ export default function Register() {
         e.preventDefault();
         setError('');
         setLoading(true);
-
         try {
             await register(formData);
             navigate('/');
@@ -46,226 +38,76 @@ export default function Register() {
     };
 
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                {/* Header */}
-                <h1 style={styles.title}>🇰🇪 CommunityHub</h1>
-                <h2 style={styles.subtitle}>Create your account</h2>
-                <p style={styles.description}>Join thousands of Kenyan youth finding opportunities</p>
+        <div className="min-h-screen bg-green-50 flex items-center justify-center px-4 py-8">
+            <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+                <h1 className="text-2xl font-bold text-green-600 text-center mb-1">🇰🇪 BridgeKE</h1>
+                <h2 className="text-xl font-semibold text-gray-800 text-center mb-1">Create your account</h2>
+                <p className="text-sm text-gray-500 text-center mb-6">Join thousands of Kenyan youth finding opportunities</p>
 
-                {/* Error Message */}
-                {error && <div style={styles.error}>{error}</div>}
+                {error && (
+                    <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">{error}</div>
+                )}
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.field}>
-                        <label style={styles.label}>Full Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="John Kamau"
-                            required
-                            style={styles.input}
-                        />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium text-gray-700">Full Name</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleChange}
+                            placeholder="John Kamau" required
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                     </div>
 
-                    <div style={styles.field}>
-                        <label style={styles.label}>Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="you@example.com"
-                            required
-                            style={styles.input}
-                        />
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleChange}
+                            placeholder="you@example.com" required
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                     </div>
 
-                    <div style={styles.field}>
-                        <label style={styles.label}>Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="••••••••"
-                            required
-                            style={styles.input}
-                        />
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" name="password" value={formData.password} onChange={handleChange}
+                            placeholder="••••••••" required
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                     </div>
 
-                    {/* Role Selection */}
-                    <div style={styles.field}>
-                        <label style={styles.label}>I am a...</label>
-                        <select
-                            name="role"
-                            value={formData.role}
-                            onChange={handleChange}
-                            style={styles.input}
-                        >
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium text-gray-700">I am a...</label>
+                        <select name="role" value={formData.role} onChange={handleChange}
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                             <option value="user">Youth seeking opportunities</option>
                             <option value="organization">Organization posting opportunities</option>
                         </select>
                     </div>
 
-                    {/* Location */}
-                    <div style={styles.row}>
-                        <div style={{ ...styles.field, flex: 1 }}>
-                            <label style={styles.label}>County</label>
-                            <select
-                                name="county"
-                                value={formData.county}
-                                onChange={handleChange}
-                                style={styles.input}
-                            >
+                    <div className="flex gap-3">
+                        <div className="flex flex-col gap-1 flex-1">
+                            <label className="text-sm font-medium text-gray-700">County</label>
+                            <select name="county" value={formData.county} onChange={handleChange}
+                                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                                 <option value="">Select county</option>
-                                {COUNTIES.map((c) => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
+                                {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
 
-                        <div style={{ ...styles.field, flex: 1 }}>
-                            <label style={styles.label}>Town</label>
-                            <input
-                                type="text"
-                                name="town"
-                                value={formData.town}
-                                onChange={handleChange}
+                        <div className="flex flex-col gap-1 flex-1">
+                            <label className="text-sm font-medium text-gray-700">Town</label>
+                            <input type="text" name="town" value={formData.town} onChange={handleChange}
                                 placeholder="e.g. Westlands"
-                                style={styles.input}
-                            />
+                                className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={loading ? styles.buttonDisabled : styles.button}
-                    >
+                    <button type="submit" disabled={loading}
+                        className={`w-full py-3 rounded-lg text-white font-semibold text-sm mt-2 transition ${loading ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 cursor-pointer'}`}>
                         {loading ? 'Creating account...' : 'Create Account'}
                     </button>
                 </form>
 
-                {/* Link to Login */}
-                <p style={styles.footer}>
+                <p className="text-center text-sm text-gray-500 mt-6">
                     Already have an account?{' '}
-                    <Link to="/login" style={styles.link}>
-                        Sign in
-                    </Link>
+                    <Link to="/login" className="text-green-600 font-medium hover:underline">Sign in</Link>
                 </p>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: {
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f0fdf4',
-        padding: '20px'
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: '12px',
-        padding: '40px',
-        width: '100%',
-        maxWidth: '440px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-    },
-    title: {
-        fontSize: '24px',
-        fontWeight: 'bold',
-        color: '#16a34a',
-        textAlign: 'center',
-        margin: '0 0 8px'
-    },
-    subtitle: {
-        fontSize: '20px',
-        fontWeight: '600',
-        color: '#111',
-        textAlign: 'center',
-        margin: '0 0 8px'
-    },
-    description: {
-        fontSize: '14px',
-        color: '#6b7280',
-        textAlign: 'center',
-        margin: '0 0 24px'
-    },
-    error: {
-        backgroundColor: '#fef2f2',
-        color: '#dc2626',
-        padding: '10px 14px',
-        borderRadius: '8px',
-        fontSize: '14px',
-        marginBottom: '16px'
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px'
-    },
-    field: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px'
-    },
-    row: {
-        display: 'flex',
-        gap: '12px'
-    },
-    label: {
-        fontSize: '14px',
-        fontWeight: '500',
-        color: '#374151'
-    },
-    input: {
-        padding: '10px 14px',
-        borderRadius: '8px',
-        border: '1px solid #d1d5db',
-        fontSize: '14px',
-        outline: 'none',
-        width: '100%',
-        boxSizing: 'border-box'
-    },
-    button: {
-        backgroundColor: '#16a34a',
-        color: '#fff',
-        padding: '12px',
-        borderRadius: '8px',
-        border: 'none',
-        fontSize: '16px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        marginTop: '8px'
-    },
-    buttonDisabled: {
-        backgroundColor: '#86efac',
-        color: '#fff',
-        padding: '12px',
-        borderRadius: '8px',
-        border: 'none',
-        fontSize: '16px',
-        fontWeight: '600',
-        cursor: 'not-allowed',
-        marginTop: '8px'
-    },
-    footer: {
-        textAlign: 'center',
-        fontSize: '14px',
-        color: '#6b7280',
-        marginTop: '20px'
-    },
-    link: {
-        color: '#16a34a',
-        fontWeight: '500',
-        textDecoration: 'none'
-    }
-};
