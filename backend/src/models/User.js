@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     neighborhood: { type: String, trim: true },
     coordinates: {
       type: [Number],
-      index: '2dsphere'
+    
     },
     education: [{
       institution: String,

@@ -31,7 +31,7 @@ const gigSchema = new mongoose.Schema({
     isRemote: { type: Boolean, default: false },
     coordinates: {
       type: [Number],
-      index: '2dsphere'
+    
     }
   },
 
