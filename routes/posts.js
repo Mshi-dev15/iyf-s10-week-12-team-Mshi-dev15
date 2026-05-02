@@ -6,8 +6,22 @@ const { validatePost } = require('../middleware/validate');
 
 router.get('/', async (req, res) => {
   try {
-    const posts = await Post.find({ deleted: false }).sort({ createdAt: -1 });
-    res.json(posts);
+    const { page = 1, limit = 10, search, author, sort = 'newest' } = req.query;
+
+    const filter = { deleted: false };
+    if (search) filter.title = { $regex: search, $options: 'i' };
+    if (author) filter.author = author;
+
+    const sortOption = sort === 'popular' ? { likes: -1 } : { createdAt: -1 };
+
+    const posts = await Post.find(filter)
+      .sort(sortOption)
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    const total = await Post.countDocuments(filter);
+
+    res.json({ posts, total, page: Number(page), pages: Math.ceil(total / limit) });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
