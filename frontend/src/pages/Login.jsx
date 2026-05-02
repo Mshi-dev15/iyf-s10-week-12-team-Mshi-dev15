@@ -21,7 +21,7 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await login(formData)
+      await login(formData.email, formData.password)
       navigate('/')
     } catch (err) {
       setError(err.message || 'Login failed')
