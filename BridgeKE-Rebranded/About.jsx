@@ -5,7 +5,7 @@ export default function About() {
     <div className="max-w-4xl mx-auto space-y-8">
       <Card className="p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          About BridgeKE
+          About <span className="text-emerald-600">BridgeKE</span>
         </h1>
         <p className="text-lg text-gray-700 mb-6">
           Bridging Kenyan youth with opportunities that matter 🇰🇪
@@ -41,14 +41,14 @@ export default function About() {
             web technologies including React, Node.js, MongoDB, and TailwindCSS.
           </p>
 
-          <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-            <h3 className="text-xl font-semibold text-blue-900 mb-2">Get Started Today!</h3>
-            <p className="text-blue-800 mb-4">
+          <div className="mt-8 p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
+            <h3 className="text-xl font-semibold text-emerald-900 mb-2">Get Started Today!</h3>
+            <p className="text-emerald-800 mb-4">
               Join our growing community and discover opportunities tailored for you.
             </p>
             <a 
               href="/register" 
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition shadow-lg shadow-emerald-500/30"
             >
               Create Account
             </a>
