@@ -27,11 +27,11 @@ function App() {
               <CreatePost />
             </ProtectedRoute>
           } />
-          
+
           {/* Auth Routes */}
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
-          
+
           {/* 404 */}
           <Route path="*" element={<div className="p-8 text-center">Page not found</div>} />
         </Route>
