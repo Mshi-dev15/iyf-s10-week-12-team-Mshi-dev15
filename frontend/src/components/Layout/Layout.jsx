@@ -17,8 +17,8 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col">
       <header className="bg-white shadow-sm border-b">
         <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <NavLink to="/" className="text-xl font-bold text-blue-600">
-            CommunityHub
+          <NavLink to="/" className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            BridgeKE
           </NavLink>
           
           <div className="flex items-center gap-6">
@@ -81,7 +81,7 @@ export default function Layout() {
 
 
       <footer className="bg-gray-50 border-t py-6 text-center text-gray-600">
-        <p>© 2026 CommunityHub Kenya 🇰🇪 | Built with ❤️ by IYF Weekend Academy</p>
+        <p>© 2026 BridgeKE Kenya 🇰🇪 | Built with ❤️ by IYF Weekend Academy</p>
       </footer>
     </div>
   )
