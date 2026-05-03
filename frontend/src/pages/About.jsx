@@ -5,7 +5,7 @@ export default function About() {
     <div className="max-w-4xl mx-auto space-y-8">
       <Card className="p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          About CommunityHub
+          About BridgeKE
         </h1>
         <p className="text-lg text-gray-700 mb-6">
           Connecting Kenyan youth with opportunities that matter 🇰🇪
@@ -13,7 +13,7 @@ export default function About() {
         
         <div className="prose max-w-none">
           <p className="text-gray-600 mb-4">
-            CommunityHub is a platform dedicated to bridging the gap between talented young 
+            BridgeKE is a platform dedicated to bridging the gap between talented young 
             professionals and meaningful opportunities across Kenya. Whether you're looking 
             for internships, freelance gigs, volunteer positions, or networking events, 
             we've got you covered.
@@ -37,7 +37,7 @@ export default function About() {
 
           <h2 className="text-2xl font-semibold mt-8 mb-4">Built With ❤️</h2>
           <p className="text-gray-600 mb-4">
-            CommunityHub is a project by IYF Weekend Academy students, built with modern 
+            BridgeKE is a project by IYF Weekend Academy students, built with modern 
             web technologies including React, Node.js, MongoDB, and TailwindCSS.
           </p>
 

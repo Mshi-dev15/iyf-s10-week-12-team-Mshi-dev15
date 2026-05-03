@@ -40,7 +40,7 @@ Both frontend tasks have been fully implemented and pushed to their respective b
      - **Logged out:** Shows Login and Sign Up buttons
    - Added "About" link to navigation
    - Improved styling with active states
-   - Changed branding to "CommunityHub"
+   - Changed branding to "BridgeKE"
    - Better footer with proper attribution
 
 ### Key Features:
@@ -238,4 +238,4 @@ The frontend now has:
 - ✅ Login/Register functionality
 - ✅ Ready for API integration
 
-**Great work! The CommunityHub frontend is taking shape!** 🇰🇪
+**Great work! The BridgeKE frontend is taking shape!** 🇰🇪
