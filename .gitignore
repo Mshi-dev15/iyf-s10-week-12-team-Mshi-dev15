@@ -137,3 +137,14 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Documentation files (keep only README.md)
+IMPLEMENTATION_COMPLETE.md
+TEAM_CREDITS_GUIDE.md
+TEAM_MEMBERS_TO_CONTACT.md
+COAUTHOR_UPDATES_AND_PR_STATUS.md
+FIX_PULL_REQUESTS_AFTER_FORCE_PUSH.md
+MAIN_BRANCH_SECRET_REMOVAL.md
+URGENT_SECRET_REMOVAL.md
+BridgeKE-Starter/MERGE_SUMMARY.md
+BridgeKE-Starter/SETUP_GUIDE.md

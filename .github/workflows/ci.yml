@@ -1,19 +1,21 @@
-name: CI Check
+name: Backend CI
 
-on:
-  push:
-    branches: ['**']
-  pull_request:
-    branches: ['**']
+on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js
+
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - name: Install backend dependencies
-        run: cd Backend && npm install
+
+      - name: Run setup script
+        run: bash scripts/setup.sh
+
+      - name: Run backend tests
+        run: cd backend && npx jest --watchAll=false --passWithNoTests

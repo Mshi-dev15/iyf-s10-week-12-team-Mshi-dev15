@@ -1,8 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const helmet = require('helmet')
-const compression = require('compression')
-const rateLimit = require('express-rate-limit')
+const path = require('path')
 
 const logger = require('./middleware/logger')
 const errorHandler = require('./middleware/errorHandler')
@@ -10,23 +8,16 @@ const routes = require('./routes')
 
 const app = express()
 
-app.use(helmet())
-app.use(compression())
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { success: false, error: { message: 'Too many requests, please try again later.' } }
-})
-app.use('/api/', limiter)
-
+// CORS Configuration
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      process.env.FRONTEND_URL
+      'http://localhost:5173',  // Vite dev
+      'http://localhost:3000',  // Local
+      process.env.FRONTEND_URL  // Production
     ].filter(Boolean)
+    
+    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
     } else {
@@ -37,30 +28,41 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }
-app.use(cors(corsOptions))
 
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+// Middleware
+app.use(cors(corsOptions))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.use(logger)
 
+// API Routes
 app.use('/api', routes)
 
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({
-    success: true,
-    data: {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV
-    }
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV
   })
 })
 
+// Serve static files in production (optional monorepo setup)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../../frontend/dist')))
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'))
+  })
+}
+
+// 404 Handler
 app.use((req, res) => {
-  res.status(404).json({ success: false, error: { message: 'Route not found' } })
+  res.status(404).json({ error: 'Route not found' })
 })
 
+// Error Handler (must be last)
 app.use(errorHandler)
 
 module.exports = app
