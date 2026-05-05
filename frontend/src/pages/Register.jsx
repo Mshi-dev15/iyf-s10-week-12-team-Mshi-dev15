@@ -39,6 +39,12 @@ export default function Register() {
 
     return (
         <div className="min-h-screen bg-green-50 flex items-center justify-center px-4 py-8">
+            <div className="fixed top-4 left-4">
+    <Link to="/" className="text-gray-500 hover:text-green-600 text-sm flex items-center gap-1">
+        ← Back to Home
+    </Link>
+</div>
+            
             <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
                 <h1 className="text-2xl font-bold text-green-600 text-center mb-1">🇰🇪 BridgeKE</h1>
                 <h2 className="text-xl font-semibold text-gray-800 text-center mb-1">Create your account</h2>

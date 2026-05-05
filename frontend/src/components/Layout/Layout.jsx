@@ -15,6 +15,10 @@ export default function Layout() {
                     </NavLink>
 
                     <div className="flex items-center gap-6">
+                         {/* 👇 ADD THIS LINE FOR HOME */}
+        <NavLink to="/" className="text-gray-600 hover:text-green-600 text-sm font-medium">
+            Home
+        </NavLink>
                         <NavLink to="/posts" className="text-gray-600 hover:text-green-600 text-sm font-medium">
                             Opportunities
                         </NavLink>
