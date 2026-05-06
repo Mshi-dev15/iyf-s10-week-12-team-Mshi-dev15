@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+<<<<<<< HEAD
+=======
+
+/* Custom styles for CommunityHub */
+body {
+  @apply bg-gray-50;
+}
+>>>>>>> origin/main
