@@ -1,18 +1,26 @@
-<<<<<<< HEAD
-export default function Posts() {
-  const { data, loading, error } = useFetch(getPosts);
+import useFetch from "../hooks/useFetch"
+import { getPosts } from "../services/postsAPI"
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error</p>;
+export default function Posts() {
+  const { data, loading, error } = useFetch(getPosts)
+
+  if (loading) return <p className="text-center py-8">Loading opportunities...</p>
+  if (error) return <p className="text-center py-8 text-red-600">Error: {error.message}</p>
 
   return (
-    <div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Opportunities</h1>
+      
       {data?.posts?.map((post) => (
-        <div key={post.id}>{post.title}</div>
+        <div key={post.id} className="border rounded p-4 mb-3 bg-white shadow-sm">
+          <h3 className="font-semibold">{post.title}</h3>
+          {post.content && <p className="text-gray-600 text-sm mt-1">{post.content.substring(0, 100)}...</p>}
+        </div>
       ))}
+      
+      {data?.posts?.length === 0 && (
+        <p className="text-gray-500 text-center py-4">No opportunities found</p>
+      )}
     </div>
-  );
+  )
 }
-=======
-export default function Posts() { return <div className="p-6"><h1 className="text-2xl font-bold">Opportunities</h1><p className="mt-2 text-gray-600">List view coming soon.</p></div> }
->>>>>>> origin/main
