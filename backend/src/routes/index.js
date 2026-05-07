@@ -1,5 +1,9 @@
 const express = require('express')
 const router = express.Router()
+<<<<<<< HEAD
+router.use('/posts', require('./posts'))
+module.exports = router
+=======
 
 const authRoutes = require('./auth')
 const gigRoutes = require('./gigs')
@@ -18,3 +22,4 @@ router.use('/location', locationRoutes)
 router.use('/posts', postRoutes)
 
 module.exports = router
+>>>>>>> origin/main
