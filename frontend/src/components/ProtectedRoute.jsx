@@ -1,6 +1,6 @@
 // frontend/src/components/ProtectedRoute.jsx
 // F5 Task — Blocks access to pages that require login
-// If user is not logged in, redirects to /login
+// If user is not logged in, redirects to /login and saves their intended destination
 
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
