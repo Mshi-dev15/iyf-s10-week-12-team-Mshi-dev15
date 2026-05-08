@@ -35,7 +35,7 @@ export default function Register() {
     e.preventDefault()
     setError(null)
 
-    // ✅ Keep HEAD's password validation (more secure)
+    // Password validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return
@@ -60,18 +60,18 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center px-4 py-8">
-      {/* ✅ Back link from PR */}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+      {/* Back link */}
       <div className="fixed top-4 left-4">
-        <Link to="/" className="text-gray-500 hover:text-green-600 text-sm flex items-center gap-1">
+        <Link to="/" className="text-gray-500 hover:text-blue-600 text-sm flex items-center gap-1">
           ← Back to Home
         </Link>
       </div>
       
-      {/* ✅ Use shared Card component */}
+      {/* Use shared Card component */}
       <Card className="p-6 md:p-8 w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-green-600">🇰🇪 BridgeKE</h1>
+          <h1 className="text-2xl font-bold text-blue-600">🇰🇪 BridgeKE</h1>
           <h2 className="text-xl font-semibold text-gray-800 mb-1">Create your account</h2>
           <p className="text-sm text-gray-500">Join thousands of Kenyan youth finding opportunities</p>
         </div>
@@ -93,7 +93,7 @@ export default function Register() {
               onChange={handleChange}
               required
               minLength="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="johndoe"
             />
           </div>
@@ -107,7 +107,7 @@ export default function Register() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="you@example.com"
             />
           </div>
@@ -122,12 +122,12 @@ export default function Register() {
               onChange={handleChange}
               required
               minLength="6"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="••••••••"
             />
           </div>
 
-          {/* Confirm Password - ✅ Keep from HEAD for security */}
+          {/* Confirm Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
             <input
@@ -136,26 +136,26 @@ export default function Register() {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="••••••••"
             />
           </div>
 
-          {/* Role Selection - ✅ From PR */}
+          {/* Role Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">I am a...</label>
             <select
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="user">Youth seeking opportunities</option>
               <option value="organization">Organization posting opportunities</option>
             </select>
           </div>
 
-          {/* County & Town - ✅ From PR (Kenya-focused!) */}
+          {/* County & Town (Kenya-focused) */}
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">County</label>
@@ -163,7 +163,7 @@ export default function Register() {
                 name="county"
                 value={formData.county}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 <option value="">Select county</option>
                 {COUNTIES.map((county) => (
@@ -179,19 +179,18 @@ export default function Register() {
                 value={formData.town}
                 onChange={handleChange}
                 placeholder="e.g. Westlands"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* ✅ Use shared Button component */}
+          {/* Use shared Button component */}
           <Button 
             type="submit" 
             variant="primary" 
             fullWidth 
             loading={loading}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700"
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </Button>
@@ -199,7 +198,7 @@ export default function Register() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-green-600 hover:underline font-medium">
+          <Link to="/login" className="text-blue-600 hover:underline font-medium">
             Sign in
           </Link>
         </p>

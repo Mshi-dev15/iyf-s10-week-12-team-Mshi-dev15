@@ -1,3 +1,4 @@
+// frontend/src/components/shared/Input/Input.jsx
 import PropTypes from 'prop-types'
 
 export default function Input({

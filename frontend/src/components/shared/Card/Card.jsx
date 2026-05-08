@@ -1,6 +1,12 @@
+// frontend/src/components/shared/Card/Card.jsx
 import PropTypes from 'prop-types'
 
-export default function Card({ children, className = '', hover = true, ...props }) {
+export default function Card({ 
+  children, 
+  className = '', 
+  hover = true, 
+  ...props 
+}) {
   return (
     <div 
       className={`

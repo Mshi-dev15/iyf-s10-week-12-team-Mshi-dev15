@@ -1,55 +1,53 @@
-<<<<<<< HEAD
+// backend/src/routes/posts.js
 const express = require('express')
 const router = express.Router()
-router.get('/', (req, res) => res.json({ posts: [] }))
-module.exports = router
-=======
-const express = require('express');
-const router = express.Router();
-const { body, validationResult } = require('express-validator');
+const { body, validationResult } = require('express-validator')
 
 // Import models
-const Post = require('../models/Post');
+const Post = require('../models/Post')
+
+// ✅ Register comments routes FIRST (nested under /api/posts/:postId/comments)
+router.use('/:postId/comments', require('./comments'))
 
 // 🎯 GET all posts with pagination, filtering, sorting
 router.get('/', async (req, res, next) => {
   try {
     // === PAGINATION ===
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
-    const skip = (page - 1) * limit;
+    const page = Math.max(1, parseInt(req.query.page) || 1)
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10))
+    const skip = (page - 1) * limit
 
     // === FILTERING ===
-    const { search, author, category } = req.query;
-    const filter = { deleted: false };
+    const { search, author, category } = req.query
+    const filter = { published: true } // Only show published posts
     
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
         { content: { $regex: search, $options: 'i' } }
-      ];
+      ]
     }
-    if (author) filter.author = author;
-    if (category) filter.category = category;
+    if (author) filter.author = author
+    if (category) filter.category = category
 
     // === SORTING ===
     const sortOptions = {
       newest: { createdAt: -1 },
       oldest: { createdAt: 1 },
       popular: { likes: -1 }
-    };
-    const sortBy = req.query.sort || 'newest';
-    const sort = sortOptions[sortBy] || sortOptions.newest;
+    }
+    const sortBy = req.query.sort || 'newest'
+    const sort = sortOptions[sortBy] || sortOptions.newest
 
     // === EXECUTE QUERY ===
     const posts = await Post.find(filter)
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .populate('author', 'name email')
-      .lean();
+      .populate('author', 'username email profile.firstName profile.lastName profile.county')
+      .lean()
 
-    const total = await Post.countDocuments(filter);
+    const total = await Post.countDocuments(filter)
 
     res.status(200).json({
       success: true,
@@ -63,106 +61,105 @@ router.get('/', async (req, res, next) => {
         hasNextPage: page * limit < total,
         hasPrevPage: page > 1
       }
-    });
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
 // 🎯 GET single post
 router.get('/:id', async (req, res, next) => {
   try {
-    const post = await Post.findOne({ _id: req.params.id, deleted: false })
-      .populate('author', 'name email');
+    const post = await Post.findOne({ _id: req.params.id, published: true })
+      .populate('author', 'username email profile.firstName profile.lastName profile.county')
     
     if (!post) {
-      return res.status(404).json({ success: false, error: { message: 'Post not found' } });
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
     }
 
-    res.status(200).json({ success: true, data: post });
+    res.status(200).json({ success: true, data: post })
   } catch (error) {
     if (error.name === 'CastError') {
-      return res.status(400).json({ success: false, error: { message: 'Invalid post ID format' } });
+      return res.status(400).json({ success: false, error: { message: 'Invalid post ID format', code: 'CAST_ERROR' } })
     }
-    next(error);
+    next(error)
   }
-});
+})
 
-// 🎯 CREATE new post
+// 🎯 CREATE new post (protected route - auth middleware applied in app.js)
 router.post('/',
   [
-    body('title').trim().isLength({ min: 3, max: 100 }).withMessage('Title must be 3-100 characters'),
-    body('content').trim().isLength({ min: 10, max: 10000 }).withMessage('Content must be 10-10000 characters'),
+    body('title').trim().isLength({ min: 3, max: 200 }).withMessage('Title must be 3-200 characters'),
+    body('content').trim().isLength({ min: 10 }).withMessage('Content must be at least 10 characters'),
   ],
   async (req, res, next) => {
-    const errors = validationResult(req);
+    const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, error: { message: 'Validation failed', details: errors.array() } });
+      return res.status(400).json({ success: false, error: { message: 'Validation failed', code: 'VALIDATION_ERROR', details: errors.array() } })
     }
 
     try {
       const post = await Post.create({
         ...req.body,
-        author: req.user?._id || '650000000000000000000000', // Fallback for testing
+        author: req.user?._id, // Requires auth middleware to set req.user
         likes: 0
-      });
+      })
 
-      const populatedPost = await Post.findById(post._id).populate('author', 'name email');
-      res.status(201).json({ success: true, data: populatedPost });
+      const populatedPost = await Post.findById(post._id).populate('author', 'username email profile.firstName profile.lastName')
+      res.status(201).json({ success: true, data: populatedPost })
     } catch (error) {
-      next(error);
+      next(error)
     }
   }
-);
+)
 
-// 🎯 UPDATE post
+// 🎯 UPDATE post (protected route - author-only authorization handled in controller/middleware)
 router.put('/:id',
   [
-    body('title').optional().trim().isLength({ min: 3, max: 100 }),
-    body('content').optional().trim().isLength({ min: 10, max: 10000 }),
+    body('title').optional().trim().isLength({ min: 3, max: 200 }),
+    body('content').optional().trim().isLength({ min: 10 }),
   ],
   async (req, res, next) => {
-    const errors = validationResult(req);
+    const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, error: { message: 'Validation failed', details: errors.array() } });
+      return res.status(400).json({ success: false, error: { message: 'Validation failed', code: 'VALIDATION_ERROR', details: errors.array() } })
     }
 
     try {
       const post = await Post.findOneAndUpdate(
-        { _id: req.params.id, deleted: false },
+        { _id: req.params.id, author: req.user?._id }, // Only allow author to update
         { $set: req.body },
         { new: true, runValidators: true }
-      ).populate('author', 'name email');
+      ).populate('author', 'username email profile.firstName profile.lastName')
 
       if (!post) {
-        return res.status(404).json({ success: false, error: { message: 'Post not found' } });
+        return res.status(404).json({ success: false, error: { message: 'Post not found or not authorized', code: 'NOT_FOUND' } })
       }
 
-      res.status(200).json({ success: true, data: post });
+      res.status(200).json({ success: true, data: post })
     } catch (error) {
-      next(error);
+      next(error)
     }
   }
-);
+)
 
-// 🎯 DELETE post (soft delete)
+// 🎯 DELETE post (soft delete - protected route)
 router.delete('/:id', async (req, res, next) => {
   try {
     const post = await Post.findOneAndUpdate(
-      { _id: req.params.id, deleted: false },
-      { $set: { deleted: true, deletedAt: new Date() } },
+      { _id: req.params.id, author: req.user?._id }, // Only allow author to delete
+      { $set: { published: false, deletedAt: new Date() } }, // Soft delete via published flag
       { new: true }
-    );
+    )
 
     if (!post) {
-      return res.status(404).json({ success: false, error: { message: 'Post not found' } });
+      return res.status(404).json({ success: false, error: { message: 'Post not found or not authorized', code: 'NOT_FOUND' } })
     }
 
-    res.status(200).json({ success: true, message: 'Post deleted successfully', data: { id: post._id } });
+    res.status(200).json({ success: true, message: 'Post deleted successfully', data: { id: post._id } })
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
-module.exports = router;
->>>>>>> origin/main
+module.exports = router
