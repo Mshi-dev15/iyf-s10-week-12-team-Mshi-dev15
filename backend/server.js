@@ -1,4 +1,9 @@
 require('dotenv').config()
+<<<<<<< HEAD
+const app = require('./src/app')
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`))
+=======
 
 // Validate required environment variables
 const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET']
@@ -25,3 +30,4 @@ connectDB().then(() => {
   console.error('❌ Failed to start server:', err)
   process.exit(1)
 })
+>>>>>>> origin/main

@@ -1,6 +1,10 @@
+// frontend/src/App.jsx
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Layout from './components/Layout/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
+
+// ✅ All page imports (from main)
 import Home from './pages/Home'
 import Posts from './pages/Posts'
 import PostDetail from './pages/PostDetail'
@@ -8,14 +12,13 @@ import CreatePost from './pages/CreatePost'
 import About from './pages/About'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import ProtectedRoute from './components/ProtectedRoute'
 
-
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route path="/" element={<Layout />}>
+          {/* Public Routes */}
           <Route index element={<Home />} />
           <Route path="posts" element={<Posts />} />
           <Route path="posts/:postId" element={<PostDetail />} />
@@ -32,13 +35,10 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
 
-          {/* 404 */}
+          {/* 404 Fallback */}
           <Route path="*" element={<div className="p-8 text-center">Page not found</div>} />
         </Route>
       </Routes>
     </AuthProvider>
   )
 }
-
-
-export default App
