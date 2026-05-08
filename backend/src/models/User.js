@@ -3,19 +3,27 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 
 const userSchema = new mongoose.Schema({
-  // Authentication
+  // 🔐 Authentication Fields (from auth branch - tested & working)
+  username: {
+    type: String,
+    required: [true, 'Username is required'],
+    unique: true,
+    trim: true,
+    minlength: [3, 'Username must be at least 3 characters'],
+    maxlength: [30, 'Username cannot exceed 30 characters']
+  },
   email: {
     type: String,
     required: [true, 'Email is required'],
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'] // ✅ Better validation from branch
+    match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
   },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'], // ✅ Clearer message from branch
+    minlength: [6, 'Password must be at least 6 characters'],
     select: false // Don't return password by default
   },
   role: {
@@ -24,14 +32,14 @@ const userSchema = new mongoose.Schema({
     default: 'youth'
   },
 
-  // Profile (comprehensive from main)
+  // 👤 Profile Fields (merged: auth branch basics + main's Kenya-specific enhancements)
   profile: {
     firstName: { type: String, required: [true, 'First name is required'], trim: true },
     lastName: { type: String, required: [true, 'Last name is required'], trim: true },
     phone: { type: String, trim: true },
     avatar: { type: String, default: '' },
     bio: { type: String, maxlength: 500 },
-    skills: [{ type: String, trim: true, lowercase: true }], // ✅ lowercase from branch
+    skills: [{ type: String, trim: true, lowercase: true }], // ✅ lowercase from auth branch
     interests: [{ type: String, trim: true }],
     county: { type: String, required: [true, 'County is required'] }, // ✅ Critical for Kenya
     town: { type: String, trim: true },
@@ -53,7 +61,7 @@ const userSchema = new mongoose.Schema({
     }
   },
 
-  // Preferences for personalized experience
+  // ⚙️ Preferences for personalized experience
   preferences: {
     gigTypes: [{ type: String, enum: ['one-time', 'recurring', 'project-based', 'weekend-only'] }],
     notifyEmail: { type: Boolean, default: true },
@@ -61,7 +69,7 @@ const userSchema = new mongoose.Schema({
     radiusKm: { type: Number, default: 50, min: 1, max: 500 }
   },
 
-  // Stats for reputation system
+  // 📊 Stats for reputation system
   stats: {
     gigsPosted: { type: Number, default: 0 },
     gigsApplied: { type: Number, default: 0 },
@@ -70,17 +78,23 @@ const userSchema = new mongoose.Schema({
     reviewCount: { type: Number, default: 0 }
   },
 
-  // Account status
+  // 🔒 Account status
   isVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true }
-}, { timestamps: true })
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+})
 
 // 🔍 Indexes for performance
+userSchema.index({ email: 1 }) // Fast login lookups
+userSchema.index({ username: 1 }) // Fast profile lookups
 userSchema.index({ 'profile.coordinates': '2dsphere' }) // Geospatial search
 userSchema.index({ 'profile.county': 1, 'profile.town': 1 }) // Location filtering
 userSchema.index({ role: 1, isActive: 1 }) // Role-based queries
 
-// 🔐 Hash password before saving (with better error handling from branch)
+// 🔐 Hash password before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
   
@@ -93,7 +107,7 @@ userSchema.pre('save', async function (next) {
   }
 })
 
-// 🔑 Method to compare passwords
+// 🔑 Method to compare passwords (tested & working)
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }
@@ -102,5 +116,10 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 userSchema.methods.getFullName = function () {
   return `${this.profile.firstName} ${this.profile.lastName}`
 }
+
+// 👤 Virtual for full user display (optional but useful)
+userSchema.virtual('displayName').get(function () {
+  return this.username || this.getFullName()
+})
 
 module.exports = mongoose.model('User', userSchema)
