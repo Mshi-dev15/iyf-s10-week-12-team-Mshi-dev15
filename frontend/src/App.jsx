@@ -1,32 +1,44 @@
+// frontend/src/App.jsx
 import { Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
 import Layout from './components/Layout/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
 
 // ✅ All page imports
 import Home from './pages/Home'
 import Posts from './pages/Posts'
+import PostDetail from './pages/PostDetail'
+import CreatePost from './pages/CreatePost'
 import About from './pages/About'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import CreatePost from './pages/CreatePost'
-import PostDetail from './pages/PostDetail'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="posts" element={<Posts />} />
-        
-        {/* ✅ New routes */}
-        <Route path="about" element={<About />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="posts/create" element={<CreatePost />} />
-        <Route path="posts/:postId" element={<PostDetail />} />
-        
-        {/* Catch-all 404 */}
-        <Route path="*" element={<div className="p-8 text-center">404 - Page Not Found</div>} />
-      </Route>
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          {/* Public Routes */}
+          <Route index element={<Home />} />
+          <Route path="posts" element={<Posts />} />
+          <Route path="posts/:postId" element={<PostDetail />} />
+          <Route path="about" element={<About />} />
+          
+          {/* Protected Routes */}
+          <Route path="create-post" element={
+            <ProtectedRoute>
+              <CreatePost />
+            </ProtectedRoute>
+          } />
+
+          {/* Auth Routes */}
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+
+          {/* 404 Fallback */}
+          <Route path="*" element={<div className="p-8 text-center">Page not found</div>} />
+        </Route>
+      </Routes>
+    </AuthProvider>
   )
 }
