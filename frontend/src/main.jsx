@@ -9,9 +9,8 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <App />  {/* ✅ Only ONE App, wrapped in AuthProvider */}
       </AuthProvider>
-      <App />
     </BrowserRouter>
   </StrictMode>,
 )
