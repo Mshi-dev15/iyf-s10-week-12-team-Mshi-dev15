@@ -1,0 +1,9 @@
+/* frontend/src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for BridgeKE */
+body {
+  @apply bg-gray-50;
+}

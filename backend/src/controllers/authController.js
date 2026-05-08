@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
-const { asyncHandler } = require('../middleware/errorHandler')
-
+const { asyncHandler, ApiError } = require('../middleware/errorHandler')
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -12,12 +11,16 @@ const generateToken = (userId) => {
   )
 }
 
-
 // @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
-exports.register = asyncHandler(async (req, res) => {
+const register = asyncHandler(async (req, res) => {
   const { username, email, password, bio, location, skills } = req.body
+  
+  // Validate required fields
+  if (!username || !email || !password) {
+    throw new ApiError('Username, email, and password are required', 400, 'VALIDATION_ERROR')
+  }
   
   // Check if user already exists
   const existingUser = await User.findOne({
@@ -25,8 +28,7 @@ exports.register = asyncHandler(async (req, res) => {
   })
   
   if (existingUser) {
-    res.status(400)
-    throw new Error('User with this email or username already exists')
+    throw new ApiError('User with this email or username already exists', 400, 'DUPLICATE_USER')
   }
   
   // Create user (password will be hashed by pre-save middleware)
@@ -44,47 +46,44 @@ exports.register = asyncHandler(async (req, res) => {
   
   // Send response (exclude password)
   res.status(201).json({
+    success: true,
     message: 'User registered successfully',
-    token,
-    user: {
-      id: user._id,
+    data: {
+      _id: user._id,
       username: user.username,
       email: user.email,
       role: user.role,
       bio: user.bio,
       location: user.location,
-      skills: user.skills
+      skills: user.skills,
+      token
     }
   })
 })
 
-
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-exports.login = asyncHandler(async (req, res) => {
+const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body
   
   // Validate input
   if (!email || !password) {
-    res.status(400)
-    throw new Error('Please provide email and password')
+    throw new ApiError('Please provide email and password', 400, 'VALIDATION_ERROR')
   }
   
   // Find user and include password for comparison
   const user = await User.findOne({ email }).select('+password')
   
   if (!user) {
-    res.status(401)
-    throw new Error('Invalid credentials')
+    throw new ApiError('Invalid credentials', 401, 'INVALID_CREDENTIALS')
   }
   
   // Check if password matches
   const isMatch = await user.comparePassword(password)
   
   if (!isMatch) {
-    res.status(401)
-    throw new Error('Invalid credentials')
+    throw new ApiError('Invalid credentials', 401, 'INVALID_CREDENTIALS')
   }
   
   // Generate token
@@ -92,54 +91,74 @@ exports.login = asyncHandler(async (req, res) => {
   
   // Send response
   res.json({
+    success: true,
     message: 'Login successful',
-    token,
-    user: {
-      id: user._id,
+    data: {
+      _id: user._id,
       username: user.username,
       email: user.email,
       role: user.role,
       bio: user.bio,
       location: user.location,
-      skills: user.skills
+      skills: user.skills,
+      token
     }
   })
 })
 
-
 // @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private
-exports.getMe = asyncHandler(async (req, res) => {
+const getMe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id)
   
   res.json({
-    id: user._id,
-    username: user.username,
-    email: user.email,
-    role: user.role,
-    bio: user.bio,
-    location: user.location,
-    skills: user.skills,
-    createdAt: user.createdAt
+    success: true,
+    data: {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      bio: user.bio,
+      location: user.location,
+      skills: user.skills,
+      createdAt: user.createdAt
+    }
   })
 })
-
 
 // @desc    Update user profile
 // @route   PUT /api/auth/me
 // @access  Private
-exports.updateProfile = asyncHandler(async (req, res) => {
+const updateProfile = asyncHandler(async (req, res) => {
   const { username, email, bio, location, skills } = req.body
+  
+  // Only allow updating specific fields (security best practice)
+  const allowedUpdates = ['username', 'email', 'bio', 'location', 'skills']
+  const updates = {}
+  
+  Object.keys(req.body).forEach(key => {
+    if (allowedUpdates.includes(key)) {
+      updates[key] = req.body[key]
+    }
+  })
   
   const user = await User.findByIdAndUpdate(
     req.user.id,
-    { username, email, bio, location, skills },
+    { $set: updates },
     { new: true, runValidators: true }
   ).select('-password')
   
+  if (!user) {
+    throw new ApiError('User not found', 404, 'NOT_FOUND')
+  }
+  
   res.json({
+    success: true,
     message: 'Profile updated successfully',
-    user
+    data: user
   })
 })
+
+// Export all functions
+module.exports = { register, login, getMe, updateProfile }
