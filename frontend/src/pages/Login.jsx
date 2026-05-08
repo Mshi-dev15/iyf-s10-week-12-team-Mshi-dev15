@@ -28,7 +28,7 @@ export default function Login() {
 
     try {
       await login(formData.email, formData.password)
-      navigate(from, { replace: true }) // ✅ Better redirect logic from PR
+      navigate(from, { replace: true }) // ✅ Better redirect logic
     } catch (err) {
       setError(err.message || 'Login failed')
     } finally {
@@ -37,18 +37,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center px-4">
-      {/* ✅ Back link from PR */}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      {/* Back link */}
       <div className="fixed top-4 left-4">
-        <Link to="/" className="text-gray-500 hover:text-green-600 text-sm flex items-center gap-1">
+        <Link to="/" className="text-gray-500 hover:text-blue-600 text-sm flex items-center gap-1">
           ← Back to Home
         </Link>
       </div>
       
-      {/* ✅ Use shared Card component */}
+      {/* Use shared Card component */}
       <Card className="p-6 md:p-8 w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-green-600">🇰🇪 BridgeKE</h1>
+          <h1 className="text-2xl font-bold text-blue-600">🇰🇪 BridgeKE</h1>
           <h2 className="text-xl font-semibold text-gray-800 mb-1">Welcome back</h2>
           <p className="text-sm text-gray-500">Sign in to discover opportunities near you</p>
         </div>
@@ -68,7 +68,7 @@ export default function Login() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="you@example.com"
             />
           </div>
@@ -81,19 +81,18 @@ export default function Login() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="••••••••"
             />
           </div>
 
-          {/* ✅ Use shared Button component */}
+          {/* Use shared Button component */}
           <Button 
             type="submit" 
             variant="primary" 
             fullWidth 
             loading={loading}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
@@ -101,7 +100,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Don't have an account?{' '}
-          <Link to="/register" className="text-green-600 hover:underline font-medium">
+          <Link to="/register" className="text-blue-600 hover:underline font-medium">
             Register here
           </Link>
         </p>

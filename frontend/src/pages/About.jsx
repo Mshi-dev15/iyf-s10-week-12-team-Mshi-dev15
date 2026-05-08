@@ -1,3 +1,4 @@
+// frontend/src/pages/About.jsx
 import Card from '../components/shared/Card'
 
 export default function About() {
@@ -8,7 +9,7 @@ export default function About() {
           About BridgeKE
         </h1>
         <p className="text-lg text-gray-700 mb-6">
-          Connecting Kenyan youth with opportunities that matter 🇰🇪
+          Connecting Kenyan youth with opportunities that matter 🇰
         </p>
         
         <div className="prose max-w-none">
