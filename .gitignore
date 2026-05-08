@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation and template files
+CommunityHub Starter Templates.txt
+*.md
+!README.md
