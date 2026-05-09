@@ -1,6 +1,6 @@
 // frontend/src/pages/Posts.jsx
 import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import useFetch from "../hooks/useFetch"
 import { useAuth } from "../context/AuthContext"
 import PagePlaceholder from "../components/shared/PagePlaceholder"
@@ -8,7 +8,9 @@ import Button from "../components/shared/Button"
 import { getPosts, votePost } from "../services/postsAPI"
 
 export default function Posts() {
-  const { data, loading, error } = useFetch(getPosts)
+  const [searchParams] = useSearchParams()
+  const category = searchParams.get('category')
+  const { data, loading, error } = useFetch(() => getPosts({ category }))
   const { isAuthenticated } = useAuth()
   const [posts, setPosts] = useState([])
   const [votingPostId, setVotingPostId] = useState(null)
@@ -57,7 +59,16 @@ export default function Posts() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Opportunities</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">
+          {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Opportunities` : 'Opportunities'}
+        </h1>
+        {category && (
+          <Link to="/posts" className="text-blue-600 hover:underline text-sm">
+            View All Opportunities
+          </Link>
+        )}
+      </div>
 
       {voteError && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">

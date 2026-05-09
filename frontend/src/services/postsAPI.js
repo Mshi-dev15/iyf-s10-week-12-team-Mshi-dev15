@@ -2,8 +2,10 @@ import api from "./api";
 
 const unwrap = (response) => response.data?.data ?? response.data;
 
-export const getPosts = async () => {
-  const response = await api.get("/posts");
+export const getPosts = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString()
+  const url = queryString ? `/posts?${queryString}` : '/posts'
+  const response = await api.get(url);
   return {
     posts: response.data?.data ?? [],
     pagination: response.data?.pagination,

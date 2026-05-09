@@ -1,6 +1,8 @@
 {
-  "buildCommand": "ls -la && test -d frontend && echo 'Frontend directory exists' || echo 'Frontend directory missing' && cd frontend && ls -la && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/(.*)",
