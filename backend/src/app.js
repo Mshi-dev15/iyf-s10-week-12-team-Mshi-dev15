@@ -40,7 +40,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
     } else { 
-      allback(null, false)
+      callback(null, false)
     }
   },
   credentials: true,
