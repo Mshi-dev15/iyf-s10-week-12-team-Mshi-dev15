@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { createPost } from '../services/postsAPI'
 import Card from '../components/shared/Card'
 import Button from '../components/shared/Button'
 
@@ -25,18 +26,14 @@ export default function CreatePost() {
     setSubmitting(true)
 
     try {
-      // TODO: Submit to API when postsAPI is available
-      // const postData = {
-      //   ...formData,
-      //   tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-      // }
-      // const newPost = await postsAPI.create(postData)
-      // navigate(`/posts/${newPost._id}`)
-      
-      alert('CreatePost functionality needs postsAPI from FE Person 2. Form data collected successfully!')
-      navigate('/posts')
+      const postData = {
+        ...formData,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+      }
+      const response = await createPost(postData)
+      navigate(`/posts/${response.data.data._id}`)
     } catch (err) {
-      setError(err.message || 'Failed to create post')
+      setError(err.response?.data?.error?.message || err.message || 'Failed to create post')
     } finally {
       setSubmitting(false)
     }

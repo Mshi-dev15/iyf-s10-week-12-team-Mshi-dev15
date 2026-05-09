@@ -1,35 +1,34 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import Card from '../components/shared/Card'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
+import Button from '../components/shared/Button'
+import api from '../services/api'
 
 export default function PostDetail() {
   const { postId } = useParams()
+  const { user, isAuthenticated } = useAuth()
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [comments, setComments] = useState([])
+  const [newComment, setNewComment] = useState('')
+  const [commentLoading, setCommentLoading] = useState(false)
+  const [commentError, setCommentError] = useState(null)
 
   useEffect(() => {
-    // TODO: Fetch post from API when postsAPI is available
     const fetchPost = async () => {
       try {
         setLoading(true)
-        // const data = await postsAPI.getById(postId)
-        // setPost(data)
+        const res = await api.get(`/posts/${postId}`)
+        setPost(res.data.data)
         
-        // Placeholder data for now
-        setPost({
-          _id: postId,
-          title: 'Sample Post',
-          content: 'This is a placeholder. PostDetail page needs postsAPI from FE Person 2.',
-          category: 'internship',
-          author: { username: 'Author Name' },
-          createdAt: new Date().toISOString(),
-          location: 'Nairobi, Kenya',
-          tags: ['sample', 'placeholder']
-        })
+        // Fetch comments
+        const commentsRes = await api.get(`/posts/${postId}/comments`)
+        setComments(commentsRes.data.data || [])
       } catch (err) {
-        setError(err.message)
+        setError(err.response?.data?.error?.message || err.message)
       } finally {
         setLoading(false)
       }
@@ -37,6 +36,24 @@ export default function PostDetail() {
     
     fetchPost()
   }, [postId])
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault()
+    if (!newComment.trim()) return
+    
+    setCommentLoading(true)
+    setCommentError(null)
+    
+    try {
+      const res = await api.post(`/posts/${postId}/comments`, { content: newComment })
+      setComments([...comments, res.data.data])
+      setNewComment('')
+    } catch (err) {
+      setCommentError(err.response?.data?.error?.message || 'Failed to post comment')
+    } finally {
+      setCommentLoading(false)
+    }
+  }
 
   if (loading) return <LoadingSpinner text="Loading post..." />
   if (error) return <div className="text-center py-12 text-red-600">Error: {error}</div>
@@ -91,10 +108,40 @@ export default function PostDetail() {
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Comments</h2>
-        <p className="text-gray-600">
-          Comments section will be implemented when commentsAPI is available from FE Person 2.
-        </p>
+        <h2 className="text-2xl font-bold mb-4">Comments ({comments.length})</h2>
+        
+        {isAuthenticated && (
+          <form onSubmit={handleCommentSubmit} className="mb-4">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              rows="3"
+              required
+            />
+            {commentError && (
+              <p className="text-red-600 text-sm mt-1">{commentError}</p>
+            )}
+            <Button type="submit" variant="primary" className="mt-2" disabled={commentLoading}>
+              {commentLoading ? 'Posting...' : 'Post Comment'}
+            </Button>
+          </form>
+        )}
+
+        <div className="space-y-4">
+          {comments.length === 0 ? (
+            <p className="text-gray-600">No comments yet. Be the first to comment!</p>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment._id} className="border-b pb-3">
+                <p className="font-semibold text-sm">{comment.author?.username || 'Anonymous'}</p>
+                <p className="text-gray-700">{comment.content}</p>
+                <p className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</p>
+              </div>
+            ))
+          )}
+        </div>
       </Card>
     </div>
   )

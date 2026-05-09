@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator')
 
 // Import models
 const Post = require('../models/Post')
+const { protect } = require('../middleware/auth')
 
 // ✅ Register comments routes FIRST (nested under /api/posts/:postId/comments)
 router.use('/:postId/comments', require('./comments'))
@@ -87,7 +88,7 @@ router.get('/:id', async (req, res, next) => {
 })
 
 // 🎯 CREATE new post (protected route - auth middleware applied in app.js)
-router.post('/',
+router.post('/', protect,
   [
     body('title').trim().isLength({ min: 3, max: 200 }).withMessage('Title must be 3-200 characters'),
     body('content').trim().isLength({ min: 10 }).withMessage('Content must be at least 10 characters'),
@@ -101,7 +102,7 @@ router.post('/',
     try {
       const post = await Post.create({
         ...req.body,
-        author: req.user?._id, // Requires auth middleware to set req.user
+        author: req.user._id, // Requires auth middleware to set req.user
         likes: 0
       })
 
@@ -114,7 +115,7 @@ router.post('/',
 )
 
 // 🎯 UPDATE post (protected route - author-only authorization handled in controller/middleware)
-router.put('/:id',
+router.put('/:id', protect,
   [
     body('title').optional().trim().isLength({ min: 3, max: 200 }),
     body('content').optional().trim().isLength({ min: 10 }),
@@ -127,7 +128,7 @@ router.put('/:id',
 
     try {
       const post = await Post.findOneAndUpdate(
-        { _id: req.params.id, author: req.user?._id }, // Only allow author to update
+        { _id: req.params.id, author: req.user._id }, // Only allow author to update
         { $set: req.body },
         { new: true, runValidators: true }
       ).populate('author', 'username email profile.firstName profile.lastName')
@@ -144,10 +145,10 @@ router.put('/:id',
 )
 
 // 🎯 DELETE post (soft delete - protected route)
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', protect, async (req, res, next) => {
   try {
     const post = await Post.findOneAndUpdate(
-      { _id: req.params.id, author: req.user?._id }, // Only allow author to delete
+      { _id: req.params.id, author: req.user._id }, // Only allow author to delete
       { $set: { published: false, deletedAt: new Date() } }, // Soft delete via published flag
       { new: true }
     )

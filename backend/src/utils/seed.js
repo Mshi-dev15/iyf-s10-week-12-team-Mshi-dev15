@@ -1,6 +1,8 @@
+require('dotenv').config()
 const mongoose = require('mongoose')
 const connectDB = require('../config/database')
 const User = require('../models/User')
+const Post = require('../models/Post')
 const Gig = require('../models/Gig')
 
 const seed = async () => {
@@ -9,9 +11,11 @@ const seed = async () => {
     console.log('🌱 Seeding database...')
 
     await User.deleteMany({})
+    await Post.deleteMany({})
     await Gig.deleteMany({})
 
     const youth = await User.create({
+      username: 'johnyouth',
       email: 'youth@example.com',
       password: 'password123',
       role: 'youth',
@@ -27,6 +31,7 @@ const seed = async () => {
     })
 
     const org = await User.create({
+      username: 'sarahorg',
       email: 'org@example.com',
       password: 'password123',
       role: 'organization',
@@ -39,6 +44,37 @@ const seed = async () => {
         bio: 'Event planning company'
       }
     })
+
+    // Create placeholder posts
+    await Post.create([
+      {
+        title: 'Internship Opportunity at Tech Startup',
+        content: 'Join our fast-growing tech startup as a software development intern. We offer hands-on experience with modern technologies including React, Node.js, and MongoDB. This is a great opportunity for students and recent graduates to build real-world skills.',
+        category: 'internship',
+        author: youth._id,
+        location: 'Nairobi, Kenya',
+        tags: ['tech', 'internship', 'software'],
+        published: true
+      },
+      {
+        title: 'Weekend Photography Gig Available',
+        content: 'Looking for a photographer for a corporate event this Saturday in Westlands. Must have own camera equipment and portfolio. Payment is KES 5,000 for the day. Contact us if interested!',
+        category: 'gig',
+        author: org._id,
+        location: 'Westlands, Nairobi',
+        tags: ['photography', 'weekend', 'event'],
+        published: true
+      },
+      {
+        title: 'Volunteer Teaching Opportunity',
+        content: 'Community center in Kibera is looking for volunteers to teach computer skills to children. No experience required - we provide training. Great way to give back and gain teaching experience.',
+        category: 'volunteer',
+        author: org._id,
+        location: 'Kibera, Nairobi',
+        tags: ['teaching', 'volunteer', 'community'],
+        published: true
+      }
+    ])
 
     await Gig.create([
       {
@@ -103,6 +139,7 @@ const seed = async () => {
     console.log('👤 Test accounts:')
     console.log('   Youth: youth@example.com / password123')
     console.log('   Org:   org@example.com / password123')
+    console.log('📝 Placeholder posts created')
     process.exit(0)
   } catch (err) {
     console.error('❌ Seed failed:', err)
