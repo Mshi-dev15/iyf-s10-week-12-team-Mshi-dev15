@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation files (not for version control)
+*.md
+!README.md
+REPOSITORY_AUDIT_REPORT.md
+BRANCH_REORGANIZATION_COMPLETE.md
+FIX_BRANCH_SEPARATION.md
+PR_MANAGEMENT_AFTER_MERGE.md
+IMPLEMENTATION_COMPLETE.md
+REORGANIZE_BRANCHES.ps1
+CommunityHub Starter Templates.txt
