@@ -24,7 +24,8 @@ const protect = asyncHandler(async (req, res, next) => {
       throw new ApiError('User not found', 401, 'USER_NOT_FOUND')
     }
 
-    if (!req.user.isActive) {
+    // Security: Block deactivated accounts
+    if (req.user.isActive === false) {
       throw new ApiError('Account has been deactivated', 403, 'ACCOUNT_DISABLED')
     }
 
@@ -40,7 +41,8 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 })
 
-// Optional auth - doesn't fail if no token (useful for public endpoints that show extra data to logged-in users)
+// Optional auth - doesn't fail if no token
+// Useful for public endpoints that show extra data to logged-in users
 const optionalAuth = asyncHandler(async (req, res, next) => {
   let token
 
@@ -59,12 +61,12 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
 
 // Restrict access to specific roles
 const restrictTo = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user?.role)) {
+  return asyncHandler(async (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
       throw new ApiError('You do not have permission to perform this action', 403, 'FORBIDDEN')
     }
     next()
-  }
+  })
 }
 
 module.exports = { protect, optionalAuth, restrictTo }

@@ -1,16 +1,16 @@
 const Comment = require('../models/Comment')
 const Post = require('../models/Post')
-const { asyncHandler } = require('../middleware/errorHandler')
+const { asyncHandler, ApiError } = require('../middleware/errorHandler')
 
 // @desc    Get comments for a post
 // @route   GET /api/posts/:postId/comments
 // @access  Public
 exports.getComments = asyncHandler(async (req, res) => {
   const comments = await Comment.find({ post: req.params.postId })
-    .populate('author', 'username')
+    .populate('author', 'username email profile.firstName profile.lastName')
     .sort({ createdAt: -1 })
   
-  res.json(comments)
+  res.json({ success: true, data: comments })
 })
 
 // @desc    Add comment to post
@@ -19,24 +19,27 @@ exports.getComments = asyncHandler(async (req, res) => {
 exports.createComment = asyncHandler(async (req, res) => {
   const { content } = req.body
   const { postId } = req.params
+
+  if (!content || content.trim().length < 1) {
+    throw new ApiError('Comment content is required', 400, 'VALIDATION_ERROR')
+  }
   
   // Verify post exists
   const post = await Post.findById(postId)
   if (!post) {
-    res.status(404)
-    throw new Error('Post not found')
+    throw new ApiError('Post not found', 404, 'NOT_FOUND')
   }
   
   const comment = await Comment.create({
-    content,
+    content: content.trim(),
     author: req.user._id,
     post: postId
   })
   
   // Populate author before sending
-  await comment.populate('author', 'username')
+  await comment.populate('author', 'username email profile.firstName profile.lastName')
   
-  res.status(201).json(comment)
+  res.status(201).json({ success: true, data: comment })
 })
 
 // @desc    Delete comment
@@ -46,8 +49,7 @@ exports.deleteComment = asyncHandler(async (req, res) => {
   const comment = await Comment.findById(req.params.commentId)
   
   if (!comment) {
-    res.status(404)
-    throw new Error('Comment not found')
+    throw new ApiError('Comment not found', 404, 'NOT_FOUND')
   }
   
   // Check authorization: comment author or admin
@@ -55,8 +57,7 @@ exports.deleteComment = asyncHandler(async (req, res) => {
   const isAdmin = req.user.role === 'admin'
   
   if (!isAuthor && !isAdmin) {
-    res.status(403)
-    throw new Error('You can only delete your own comments')
+    throw new ApiError('You can only delete your own comments', 403, 'FORBIDDEN')
   }
   
   await comment.deleteOne()
