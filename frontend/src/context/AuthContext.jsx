@@ -8,6 +8,12 @@ const AuthContext = createContext(null);
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+const getErrorMessage = (data, fallback) => (
+    data?.error?.message || data?.message || data?.error || fallback
+);
+
+const getAuthUser = (data) => data?.data || data;
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -22,7 +28,8 @@ export function AuthProvider({ children }) {
             })
                 .then((res) => res.json())
                 .then((data) => {
-                    if (data._id) setUser(data);
+                    const authUser = getAuthUser(data);
+                    if (authUser?._id) setUser(authUser);
                     else localStorage.removeItem('token'); // token is invalid
                 })
                 .catch(() => localStorage.removeItem('token'))
@@ -42,11 +49,12 @@ export function AuthProvider({ children }) {
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || 'Login failed');
+        if (!res.ok) throw new Error(getErrorMessage(data, 'Login failed'));
 
-        localStorage.setItem('token', data.token);
-        setUser(data.user);
-        return data.user;
+        const authUser = getAuthUser(data);
+        localStorage.setItem('token', authUser.token);
+        setUser(authUser);
+        return authUser;
     };
 
     // ── Register ──────────────────────────────────────────────────────────────
@@ -59,11 +67,12 @@ export function AuthProvider({ children }) {
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || 'Registration failed');
+        if (!res.ok) throw new Error(getErrorMessage(data, 'Registration failed'));
 
-        localStorage.setItem('token', data.token);
-        setUser(data.user);
-        return data.user;
+        const authUser = getAuthUser(data);
+        localStorage.setItem('token', authUser.token);
+        setUser(authUser);
+        return authUser;
     };
 
     // ── Logout ────────────────────────────────────────────────────────────────
