@@ -7,7 +7,7 @@ export default function useFetch(fetchFunction) {
 
   useEffect(() => {
     fetchFunction()
-      .then((res) => setData(res.data))
+      .then((res) => setData(res?.data ?? res))
       .catch(setError)
       .finally(() => setLoading(false));
   }, []);

@@ -2,7 +2,6 @@
 const express = require('express')
 const router = express.Router()
 const { body, validationResult } = require('express-validator')
-
 // Import models
 const Post = require('../models/Post')
 const { protect } = require('../middleware/auth')
@@ -35,7 +34,8 @@ router.get('/', async (req, res, next) => {
     const sortOptions = {
       newest: { createdAt: -1 },
       oldest: { createdAt: 1 },
-      popular: { likes: -1 }
+      popular: { 'votes.netScore': -1 },
+      trending: { 'votes.netScore': -1, createdAt: -1 }
     }
     const sortBy = req.query.sort || 'newest'
     const sort = sortOptions[sortBy] || sortOptions.newest
@@ -45,7 +45,7 @@ router.get('/', async (req, res, next) => {
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .populate('author', 'username email profile.firstName profile.lastName profile.county')
+      .populate('author', 'username email profile.firstName profile.lastName profile.county profile.phone profile.socials')
       .lean()
 
     const total = await Post.countDocuments(filter)
@@ -72,7 +72,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const post = await Post.findOne({ _id: req.params.id, published: true })
-      .populate('author', 'username email profile.firstName profile.lastName profile.county')
+      .populate('author', 'username email profile.firstName profile.lastName profile.county profile.phone profile.socials')
     
     if (!post) {
       return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
@@ -88,7 +88,68 @@ router.get('/:id', async (req, res, next) => {
 })
 
 // 🎯 CREATE new post (protected route - auth middleware applied in app.js)
-router.post('/', protect,
+// Vote on a post (upvote/downvote)
+router.post('/:id/vote', protect, async (req, res, next) => {
+  try {
+    const { voteType } = req.body // 'upvote' or 'downvote'
+    
+    if (!['upvote', 'downvote'].includes(voteType)) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid vote type', code: 'INVALID_VOTE' } })
+    }
+
+    const post = await Post.findOne({ _id: req.params.id, published: true })
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    // Check if user already voted
+    const existingVote = post.getUserVote(req.user._id)
+    
+    if (existingVote === voteType) {
+      // User is trying to vote the same way again - remove the vote
+      await post.removeVote(req.user._id)
+    } else {
+      // Add or change the vote
+      await post.addVote(req.user._id, voteType)
+    }
+
+    const updatedPost = await Post.findById(post._id)
+      .populate('author', 'username email profile.firstName profile.lastName profile.phone profile.socials')
+
+    res.status(200).json({ success: true, data: updatedPost })
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, error: { message: 'Invalid post ID format', code: 'CAST_ERROR' } })
+    }
+    next(error)
+  }
+})
+
+// Legacy like route for backward compatibility
+router.post('/:id/like', protect, async (req, res, next) => {
+  try {
+    const post = await Post.findOneAndUpdate(
+      { _id: req.params.id, published: true },
+      { $inc: { 'votes.upvotes': 1, 'votes.netScore': 1 } },
+      { new: true, runValidators: true }
+    ).populate('author', 'username email profile.firstName profile.lastName')
+
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    res.status(200).json({ success: true, data: post })
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, error: { message: 'Invalid post ID format', code: 'CAST_ERROR' } })
+    }
+    next(error)
+  }
+})
+
+router.post('/',
+  protect,
   [
     body('title').trim().isLength({ min: 3, max: 200 }).withMessage('Title must be 3-200 characters'),
     body('content').trim().isLength({ min: 10 }).withMessage('Content must be at least 10 characters'),
@@ -115,7 +176,8 @@ router.post('/', protect,
 )
 
 // 🎯 UPDATE post (protected route - author-only authorization handled in controller/middleware)
-router.put('/:id', protect,
+router.put('/:id',
+  protect,
   [
     body('title').optional().trim().isLength({ min: 3, max: 200 }),
     body('content').optional().trim().isLength({ min: 10 }),

@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import Posts from './pages/Posts'
 import PostDetail from './pages/PostDetail'
 import CreatePost from './pages/CreatePost'
+import UserProfile from './pages/UserProfile'
 import About from './pages/About'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -20,6 +21,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="posts" element={<Posts />} />
         <Route path="posts/:postId" element={<PostDetail />} />
+        <Route path="users/:userId" element={<UserProfile />} />
         <Route path="about" element={<About />} />
         
         {/* Protected Routes */}

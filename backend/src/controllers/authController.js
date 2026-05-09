@@ -19,16 +19,6 @@ const buildAuthUser = (user, token) => ({
   ...(token && { token })
 })
 
-const buildAuthPayload = (user, token) => {
-  const authUser = buildAuthUser(user, token)
-
-  return {
-    token,
-    user: authUser,
-    data: authUser
-  }
-}
-
 // @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -75,7 +65,7 @@ const register = asyncHandler(async (req, res) => {
     username,
     email,
     password,
-    role: role === 'organization' ? 'organization' : 'youth',
+    role: role === 'user' ? 'youth' : role,
     profile: userProfile
   })
 
@@ -84,7 +74,7 @@ const register = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
-    ...buildAuthPayload(user, token)
+    data: buildAuthUser(user, token)
   })
 })
 
@@ -115,7 +105,17 @@ const login = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: 'Login successful',
-    ...buildAuthPayload(user, token)
+    data: buildAuthUser(user, token)
+  })
+})
+
+// @desc    Logout current user
+// @route   POST /api/auth/logout
+// @access  Private
+const logout = asyncHandler(async (req, res) => {
+  res.json({
+    success: true,
+    message: 'Logout successful'
   })
 })
 
@@ -132,10 +132,6 @@ const getMe = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: {
-      ...buildAuthUser(user),
-      createdAt: user.createdAt
-    },
-    user: {
       ...buildAuthUser(user),
       createdAt: user.createdAt
     }
@@ -172,14 +168,4 @@ const updateProfile = asyncHandler(async (req, res) => {
   })
 })
 
-// @desc    Logout user
-// @route   POST /api/auth/logout
-// @access  Private
-const logout = asyncHandler(async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Logged out successfully'
-  })
-})
-
-module.exports = { register, login, getMe, updateProfile, logout }
+module.exports = { register, login, logout, getMe, updateProfile }

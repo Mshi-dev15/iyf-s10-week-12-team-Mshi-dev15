@@ -76,9 +76,20 @@ export function AuthProvider({ children }) {
     };
 
     // ── Logout ────────────────────────────────────────────────────────────────
-    const logout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
+    const logout = async () => {
+        const token = localStorage.getItem('token');
+
+        try {
+            if (token) {
+                await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            }
+        } finally {
+            localStorage.removeItem('token');
+            setUser(null);
+        }
     };
 
     const value = {

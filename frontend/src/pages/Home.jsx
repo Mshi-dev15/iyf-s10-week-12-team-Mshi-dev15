@@ -1,12 +1,13 @@
 // frontend/src/pages/Home.jsx
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import PagePlaceholder from '../components/shared/PagePlaceholder'
 
 export default function Home() {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-600">Loading...</div>
+    return <PagePlaceholder type="hero" />
   }
 
   return (
