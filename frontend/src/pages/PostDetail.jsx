@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getPostById } from '../services/postsAPI'
 import { votePost } from '../services/votesAPI'
 import { getComments, createComment } from '../services/commentsAPI'
+import { toggleBookmark, sharePost } from '../services/engagementAPI'
 
 export default function PostDetail() {
   const { postId } = useParams()
@@ -17,6 +18,8 @@ export default function PostDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [voting, setVoting] = useState(false)
+  const [bookmarking, setBookmarking] = useState(false)
+  const [sharing, setSharing] = useState(false)
   
   // Comment form state
   const [commentText, setCommentText] = useState('')
@@ -93,6 +96,51 @@ export default function PostDetail() {
       alert('Failed to post comment. Please try again.')
     } finally {
       setSubmittingComment(false)
+    }
+  }
+
+  const handleBookmark = async () => {
+    if (!user) {
+      alert('Please login to bookmark posts')
+      return
+    }
+
+    setBookmarking(true)
+    try {
+      const response = await toggleBookmark(postId)
+      if (response.data.success) {
+        setPost(response.data.data)
+      }
+    } catch (err) {
+      console.error('Bookmark failed:', err)
+    } finally {
+      setBookmarking(false)
+    }
+  }
+
+  const handleShare = async () => {
+    setSharing(true)
+    try {
+      await sharePost(postId)
+      
+      // Copy link to clipboard
+      const url = window.location.href
+      await navigator.clipboard.writeText(url)
+      
+      alert('Link copied to clipboard! 🎉')
+      
+      // Update share count
+      setPost(prev => ({
+        ...prev,
+        shares: (prev.shares || 0) + 1
+      }))
+    } catch (err) {
+      console.error('Share failed:', err)
+      // Fallback: just copy link
+      const url = window.location.href
+      window.prompt('Copy this link:', url)
+    } finally {
+      setSharing(false)
     }
   }
 
@@ -221,6 +269,34 @@ export default function PostDetail() {
               <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
             <span>{post.downvotes || 0} Downvotes</span>
+          </button>
+          
+          {/* Bookmark Button */}
+          <button
+            onClick={handleBookmark}
+            disabled={bookmarking}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition disabled:opacity-50 font-medium ${
+              post.bookmarkedBy?.includes(user?._id)
+                ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <svg className="w-5 h-5" fill={post.bookmarkedBy?.includes(user?._id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+            <span>{post.bookmarkedBy?.length || 0} Saved</span>
+          </button>
+          
+          {/* Share Button */}
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition disabled:opacity-50 font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            <span>{post.shares || 0} Shares</span>
           </button>
         </div>
       </Card>

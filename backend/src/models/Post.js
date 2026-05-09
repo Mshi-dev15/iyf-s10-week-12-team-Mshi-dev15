@@ -51,6 +51,18 @@ const postSchema = new mongoose.Schema({
       enum: ['upvote', 'downvote']
     }
   }],
+  bookmarkedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  views: {
+    type: Number,
+    default: 0
+  },
+  shares: {
+    type: Number,
+    default: 0
+  },
   tags: [{
     type: String,
     trim: true,
@@ -123,6 +135,60 @@ postSchema.methods.vote = function(userId, voteType) {
 // 👤 Static method: find posts by author
 postSchema.statics.findByAuthor = function(authorId) {
   return this.find({ author: authorId }).sort({ createdAt: -1 })
+}
+
+// 🔖 Instance method: toggle bookmark
+postSchema.methods.toggleBookmark = function(userId) {
+  const isBookmarked = this.bookmarkedBy.includes(userId)
+  
+  if (isBookmarked) {
+    this.bookmarkedBy = this.bookmarkedBy.filter(id => id.toString() !== userId.toString())
+  } else {
+    this.bookmarkedBy.push(userId)
+  }
+  
+  return this.save()
+}
+
+// 👁️ Instance method: increment views
+postSchema.methods.incrementViews = function() {
+  this.views = (this.views || 0) + 1
+  return this.save()
+}
+
+// 🔗 Instance method: increment shares
+postSchema.methods.incrementShares = function() {
+  this.shares = (this.shares || 0) + 1
+  return this.save()
+}
+
+// 🔥 Static method: get trending posts (most engagement in last 7 days)
+postSchema.statics.getTrending = function(limit = 5) {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  
+  return this.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: sevenDaysAgo },
+        published: true
+      }
+    },
+    {
+      $addFields: {
+        engagementScore: {
+          $add: [
+            { $multiply: ['$upvotes', 2] },
+            { $multiply: ['$downvotes', -1] },
+            { $size: '$bookmarkedBy' },
+            { $multiply: ['$shares', 3] },
+            { $multiply: ['$views', 0.1] }
+          ]
+        }
+      }
+    },
+    { $sort: { engagementScore: -1 } },
+    { $limit: limit }
+  ])
 }
 
 module.exports = mongoose.model('Post', postSchema)

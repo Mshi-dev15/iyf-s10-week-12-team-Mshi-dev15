@@ -190,4 +190,63 @@ router.post('/:id/vote', protect, async (req, res, next) => {
   }
 })
 
+// 🔖 BOOKMARK/UNBOOKMARK post (protected route)
+router.post('/:id/bookmark', protect, async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.toggleBookmark(req.user._id)
+    
+    const updatedPost = await Post.findById(post._id)
+      .populate('author', 'username email profile.firstName profile.lastName profile.avatar')
+
+    res.status(200).json({ 
+      success: true, 
+      data: updatedPost,
+      bookmarked: updatedPost.bookmarkedBy.includes(req.user._id)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔗 SHARE post (increment share count)
+router.post('/:id/share', async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.incrementShares()
+    
+    res.status(200).json({ success: true, shares: post.shares })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔥 GET trending posts (most engagement)
+router.get('/trending', async (req, res, next) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5
+    const trendingPosts = await Post.getTrending(limit)
+    
+    // Populate author information
+    const populatedPosts = await Post.populate(trendingPosts, {
+      path: 'author',
+      select: 'username email profile.firstName profile.lastName profile.avatar'
+    })
+
+    res.status(200).json({ success: true, data: populatedPosts })
+  } catch (error) {
+    next(error)
+  }
+})
+
 module.exports = router
