@@ -15,7 +15,7 @@ const generateToken = (userId) => {
 // @route   POST /api/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res) => {
-  const { username, email, password, bio, location, skills } = req.body
+const { username, email, password, bio, location, skills, profile, firstName, lastName, county, town, phone } = req.body
   
   // Validate required fields
   if (!username || !email || !password) {
@@ -32,14 +32,27 @@ const register = asyncHandler(async (req, res) => {
   }
   
   // Create user (password will be hashed by pre-save middleware)
-  const user = await User.create({
-    username,
-    email,
-    password,
-    bio,
-    location,
-    skills
-  })
+  // Build profile object: use nested profile if provided, otherwise build from flat fields
+const userProfile = profile || {
+  firstName: firstName,
+  lastName: lastName,
+  county: county,
+  town: town || '',
+  phone: phone || '',
+  bio: bio || '',
+  skills: skills || []
+}
+
+// Create user (password will be hashed by pre-save middleware)
+const user = await User.create({
+  username,
+  email,
+  password,
+  bio,
+  location,
+  skills,
+  profile: userProfile  // ← Pass the properly structured profile
+})
   
   // Generate token
   const token = generateToken(user._id)
