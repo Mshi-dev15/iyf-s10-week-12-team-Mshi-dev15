@@ -26,6 +26,12 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/communityhub';
 
