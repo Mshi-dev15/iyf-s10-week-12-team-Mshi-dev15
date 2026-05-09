@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createPost } from '../services/postsAPI'
 import Card from '../components/shared/Card'
 import Button from '../components/shared/Button'
+import { createPost } from '../services/postsAPI'
 
 export default function CreatePost() {
   const navigate = useNavigate()
@@ -30,8 +30,8 @@ export default function CreatePost() {
         ...formData,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
       }
-      const response = await createPost(postData)
-      navigate(`/posts/${response.data.data._id}`)
+      const newPost = await createPost(postData)
+      navigate(`/posts/${newPost._id}`)
     } catch (err) {
       setError(err.response?.data?.error?.message || err.message || 'Failed to create post')
     } finally {

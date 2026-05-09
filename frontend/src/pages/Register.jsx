@@ -1,4 +1,3 @@
-// frontend/src/pages/Register.jsx
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -14,17 +13,17 @@ const COUNTIES = [
 export default function Register() {
   const { register } = useAuth()
   const navigate = useNavigate()
-  
+
   const [formData, setFormData] = useState({
     username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user',
+    role: 'youth',
     county: '',
-    town: '',
-    firstName: '',
-    lastName: ''
+    town: ''
   })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -37,11 +36,11 @@ export default function Register() {
     e.preventDefault()
     setError(null)
 
-    // Password validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return
     }
+
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters')
       return
@@ -50,7 +49,6 @@ export default function Register() {
     setLoading(true)
 
     try {
-      // Remove confirmPassword before sending to API
       const { confirmPassword, ...registerData } = formData
       await register(registerData)
       navigate('/')
@@ -63,17 +61,15 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
-      {/* Back link */}
       <div className="fixed top-4 left-4">
         <Link to="/" className="text-gray-500 hover:text-blue-600 text-sm flex items-center gap-1">
-          ← Back to Home
+          Back to Home
         </Link>
       </div>
-      
-      {/* Use shared Card component */}
+
       <Card className="p-6 md:p-8 w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-blue-600">🇰🇪 BridgeKE</h1>
+          <h1 className="text-2xl font-bold text-blue-600">BridgeKE</h1>
           <h2 className="text-xl font-semibold text-gray-800 mb-1">Create your account</h2>
           <p className="text-sm text-gray-500">Join thousands of Kenyan youth finding opportunities</p>
         </div>
@@ -85,7 +81,6 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Username */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
             <input
@@ -100,35 +95,33 @@ export default function Register() {
             />
           </div>
 
-          {/* First Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-            <input
-              type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="John"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">First name</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="John"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Last name</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="Doe"
+              />
+            </div>
           </div>
 
-          {/* Last Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-            <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="Doe"
-            />
-          </div>
-
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -142,7 +135,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
@@ -153,11 +145,10 @@ export default function Register() {
               required
               minLength="6"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="••••••••"
+              placeholder="Password"
             />
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
             <input
@@ -167,11 +158,10 @@ export default function Register() {
               onChange={handleChange}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="••••••••"
+              placeholder="Password"
             />
           </div>
 
-          {/* Role Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">I am a...</label>
             <select
@@ -180,12 +170,11 @@ export default function Register() {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
-              <option value="user">Youth seeking opportunities</option>
+              <option value="youth">Youth seeking opportunities</option>
               <option value="organization">Organization posting opportunities</option>
             </select>
           </div>
 
-          {/* County & Town (Kenya-focused) */}
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">County</label>
@@ -193,6 +182,7 @@ export default function Register() {
                 name="county"
                 value={formData.county}
                 onChange={handleChange}
+                required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 <option value="">Select county</option>
@@ -214,11 +204,10 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Use shared Button component */}
-          <Button 
-            type="submit" 
-            variant="primary" 
-            fullWidth 
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
             loading={loading}
             disabled={loading}
           >

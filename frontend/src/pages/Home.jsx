@@ -1,12 +1,13 @@
 // frontend/src/pages/Home.jsx
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import PagePlaceholder from '../components/shared/PagePlaceholder'
 
 export default function Home() {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-600">Loading...</div>
+    return <PagePlaceholder type="hero" />
   }
 
   return (
@@ -39,18 +40,19 @@ export default function Home() {
       {/* Categories Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Internships', emoji: '💼' },
-          { label: 'Gigs', emoji: '⚡' },
-          { label: 'Volunteering', emoji: '🤝' },
-          { label: 'Events', emoji: '🎯' },
+          { label: 'Internships', emoji: '💼', category: 'internship' },
+          { label: 'Gigs', emoji: '⚡', category: 'gig' },
+          { label: 'Volunteering', emoji: '🤝', category: 'volunteer' },
+          { label: 'Events', emoji: '🎯', category: 'event' },
         ].map((cat) => (
-          <div 
+          <Link
             key={cat.label}
-            className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition cursor-pointer"
+            to={`/posts?category=${cat.category}`}
+            className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition cursor-pointer block"
           >
             <div className="text-3xl mb-2">{cat.emoji}</div>
             <p className="font-medium text-gray-700">{cat.label}</p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
