@@ -10,7 +10,7 @@ exports.getComments = asyncHandler(async (req, res) => {
     .populate('author', 'username')
     .sort({ createdAt: -1 })
   
-  res.json(comments)
+  res.json({ success: true, data: comments })
 })
 
 // @desc    Add comment to post
@@ -36,7 +36,7 @@ exports.createComment = asyncHandler(async (req, res) => {
   // Populate author before sending
   await comment.populate('author', 'username')
   
-  res.status(201).json(comment)
+  res.status(201).json({ success: true, data: comment })
 })
 
 // @desc    Delete comment
@@ -61,5 +61,5 @@ exports.deleteComment = asyncHandler(async (req, res) => {
   
   await comment.deleteOne()
   
-  res.status(204).send()
+  res.json({ success: true, message: 'Comment deleted' })
 })

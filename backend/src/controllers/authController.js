@@ -15,7 +15,7 @@ const generateToken = (userId) => {
 // @route   POST /api/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res) => {
-const { username, email, password, bio, location, skills, profile, firstName, lastName, county, town, phone } = req.body
+const { username, email, password, bio, location, skills, profile, firstName, lastName, county, town, phone, role } = req.body
   
   // Validate required fields
   if (!username || !email || !password) {
@@ -30,6 +30,9 @@ const { username, email, password, bio, location, skills, profile, firstName, la
   if (existingUser) {
     throw new ApiError('User with this email or username already exists', 400, 'DUPLICATE_USER')
   }
+  
+  // Map 'user' role to 'youth' (frontend uses 'user' for youth role)
+  const mappedRole = role === 'organization' ? 'organization' : 'youth'
   
   // Create user (password will be hashed by pre-save middleware)
   // Build profile object: use nested profile if provided, otherwise build from flat fields
@@ -48,28 +51,23 @@ const user = await User.create({
   username,
   email,
   password,
-  bio,
-  location,
-  skills,
+  role: mappedRole,
   profile: userProfile  // ← Pass the properly structured profile
 })
   
   // Generate token
   const token = generateToken(user._id)
   
-  // Send response (exclude password)
+  // Send response (exclude password) - match frontend expected format
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
-    data: {
+    token,
+    user: {
       _id: user._id,
       username: user.username,
       email: user.email,
-      role: user.role,
-      bio: user.bio,
-      location: user.location,
-      skills: user.skills,
-      token
+      role: user.role
     }
   })
 })
@@ -106,15 +104,12 @@ const login = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: 'Login successful',
-    data: {
+    token,
+    user: {
       _id: user._id,
       username: user.username,
       email: user.email,
-      role: user.role,
-      bio: user.bio,
-      location: user.location,
-      skills: user.skills,
-      token
+      role: user.role
     }
   })
 })
@@ -127,7 +122,7 @@ const getMe = asyncHandler(async (req, res) => {
   
   res.json({
     success: true,
-    data: {
+    user: {
       _id: user._id,
       username: user.username,
       email: user.email,
@@ -173,5 +168,15 @@ const updateProfile = asyncHandler(async (req, res) => {
   })
 })
 
+// @desc    Logout user
+// @route   POST /api/auth/logout
+// @access  Private
+const logout = asyncHandler(async (req, res) => {
+  res.json({
+    success: true,
+    message: 'Logged out successfully'
+  })
+})
+
 // Export all functions
-module.exports = { register, login, getMe, updateProfile }
+module.exports = { register, login, getMe, updateProfile, logout }

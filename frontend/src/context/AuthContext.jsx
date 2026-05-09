@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
             })
                 .then((res) => res.json())
                 .then((data) => {
-                    if (data._id) setUser(data);
+                    if (data.user) setUser(data.user);
                     else localStorage.removeItem('token'); // token is invalid
                 })
                 .catch(() => localStorage.removeItem('token'))
@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || 'Login failed');
+        if (!res.ok) throw new Error(data.error || data.message || 'Login failed');
 
         localStorage.setItem('token', data.token);
         setUser(data.user);
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || 'Registration failed');
+        if (!res.ok) throw new Error(data.error || data.message || 'Registration failed');
 
         localStorage.setItem('token', data.token);
         setUser(data.user);

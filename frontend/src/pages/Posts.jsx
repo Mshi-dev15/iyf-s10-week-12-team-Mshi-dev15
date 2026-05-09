@@ -13,11 +13,13 @@ export default function Posts() {
     return <p className="text-center py-8 text-red-600">Error: {error.message}</p>
   }
 
+  const posts = data?.data || data?.posts || []
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Opportunities</h1>
       
-      {data?.posts?.map((post) => (
+      {posts.map((post) => (
         <div 
           key={post._id || post.id} 
           className="border rounded-lg p-4 mb-3 bg-white shadow-sm hover:shadow-md transition cursor-pointer"
@@ -36,7 +38,7 @@ export default function Posts() {
         </div>
       ))}
       
-      {data?.posts?.length === 0 && (
+      {posts.length === 0 && (
         <p className="text-gray-500 text-center py-4">No opportunities found</p>
       )}
     </div>
