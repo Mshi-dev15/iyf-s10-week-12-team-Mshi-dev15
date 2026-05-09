@@ -96,34 +96,35 @@ export default function Home() {
   return (
     <div className="space-y-12 pb-12">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-3xl p-12 text-white text-center shadow-2xl relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
+      <div className="gradient-primary rounded-3xl p-12 text-white text-center shadow-2xl relative overflow-hidden animate-gradient">
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
         </div>
         
         <div className="relative z-10">
-          <h1 className="text-5xl font-bold mb-4 animate-fade-in">
+          <h1 className="text-5xl font-bold mb-4 animate-fade-in text-shadow-lg">
             🇰🇪 Welcome to BridgeKE
           </h1>
-          <p className="text-blue-100 text-xl mb-8 max-w-2xl mx-auto">
+          <p className="text-blue-100 text-xl mb-8 max-w-2xl mx-auto text-shadow">
             Connecting Kenyan youth with local internships, gigs, volunteering and events
           </p>
           
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
-            <div className="relative">
+            <div className="relative group">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for opportunities..."
-                className="w-full px-6 py-4 pr-12 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-lg"
+                className="w-full px-6 py-4 pr-12 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-lg hover:shadow-xl transition-all duration-300 glass-card"
               />
               <button
                 type="submit"
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition hover:scale-110"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -154,12 +155,13 @@ export default function Home() {
 
       {/* Trending Posts Section */}
       {trendingPosts.length > 0 && (
-        <div>
+        <div className="animate-slide-in-left">
           <div className="flex items-center gap-3 mb-6">
-            <svg className="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-8 h-8 text-orange-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
             </svg>
-            <h2 className="text-3xl font-bold text-gray-900">Trending Now</h2>
+            <h2 className="text-3xl font-bold text-gray-900 text-gradient-fire">Trending Now</h2>
+            <span className="badge-hot">HOT 🔥</span>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -167,7 +169,7 @@ export default function Home() {
               <Link
                 key={post._id}
                 to={`/posts/${post._id}`}
-                className="group bg-white rounded-xl p-6 border-2 border-gray-100 hover:border-orange-300 shadow-sm hover:shadow-xl transition-all duration-300"
+                className="group card-modern hover-lift border-gradient"
               >
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-2xl font-bold text-orange-500">#{index + 1}</span>
@@ -219,11 +221,12 @@ export default function Home() {
               className={`
                 bg-gradient-to-br ${hoveredCard === index ? cat.hoverColor : cat.color}
                 rounded-2xl p-8 text-white cursor-pointer
-                transform transition-all duration-300 ease-out
-                hover:scale-105 hover:-translate-y-2
-                shadow-lg hover:shadow-2xl
-                relative overflow-hidden group
+                transform transition-all duration-500 ease-out
+                hover:scale-110 hover:-translate-y-3
+                shadow-lg hover:shadow-2xl hover-glow
+                relative overflow-hidden group animate-fade-in
               `}
+              style={{animationDelay: `${index * 0.1}s`}}
             >
               {/* Animated Background */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300">
@@ -249,35 +252,35 @@ export default function Home() {
       </div>
 
       {/* Quick Stats Section */}
-      <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-8 border border-gray-200">
+      <div className="gradient-mesh rounded-2xl p-8 border border-gray-200 animate-slide-in-right shadow-xl">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <div className="text-3xl font-bold text-blue-600 mb-1">500+</div>
-            <div className="text-gray-600 text-sm">Active Opportunities</div>
+          <div className="hover-scale">
+            <div className="text-4xl font-bold text-gradient mb-1">500+</div>
+            <div className="text-gray-700 text-sm font-medium">Active Opportunities</div>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-purple-600 mb-1">1,200+</div>
-            <div className="text-gray-600 text-sm">Registered Users</div>
+          <div className="hover-scale">
+            <div className="text-4xl font-bold text-gradient-ocean mb-1">1,200+</div>
+            <div className="text-gray-700 text-sm font-medium">Registered Users</div>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-green-600 mb-1">50+</div>
-            <div className="text-gray-600 text-sm">Partner Organizations</div>
+          <div className="hover-scale">
+            <div className="text-4xl font-bold text-gradient-fire mb-1">50+</div>
+            <div className="text-gray-700 text-sm font-medium">Partner Organizations</div>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-orange-600 mb-1">47</div>
-            <div className="text-gray-600 text-sm">Counties Covered</div>
+          <div className="hover-scale">
+            <div className="text-4xl font-bold text-gradient mb-1">47</div>
+            <div className="text-gray-700 text-sm font-medium">Counties Covered</div>
           </div>
         </div>
       </div>
 
       {/* Call to Action */}
       {!user && (
-        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-10 text-white text-center shadow-xl">
-          <h3 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h3>
-          <p className="text-indigo-100 mb-6 max-w-xl mx-auto">
+        <div className="gradient-purple rounded-2xl p-10 text-white text-center shadow-xl animate-bounce-in hover-glow">
+          <h3 className="text-3xl font-bold mb-4 text-shadow-lg">Ready to Start Your Journey?</h3>
+          <p className="text-purple-100 mb-6 max-w-xl mx-auto text-shadow">
             Join thousands of Kenyan youth who are already finding amazing opportunities on BridgeKE
           </p>
-          <Link to="/register" className="inline-block bg-white text-indigo-600 font-semibold px-8 py-4 rounded-xl hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-lg">
+          <Link to="/register" className="inline-block bg-white text-purple-600 font-semibold px-8 py-4 rounded-xl hover:bg-purple-50 transition-all transform hover:scale-110 shadow-lg btn-primary">
             Create Free Account →
           </Link>
         </div>
