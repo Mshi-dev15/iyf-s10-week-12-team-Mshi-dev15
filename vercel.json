@@ -1,5 +1,5 @@
 {
-  "buildCommand": "ls -la && cd frontend && ls -la && npm install && npm run build",
+  "buildCommand": "ls -la && test -d frontend && echo 'Frontend directory exists' || echo 'Frontend directory missing' && cd frontend && ls -la && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
