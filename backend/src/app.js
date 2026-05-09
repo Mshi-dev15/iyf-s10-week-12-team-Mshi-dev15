@@ -1,7 +1,7 @@
 // backend/src/app.js
 const express = require('express')
 const cors = require('cors')
-const path = require('path')
+
 
 // 🔐 Security & performance middleware
 const helmet = require('helmet')
@@ -74,13 +74,6 @@ app.get('/api/health', (req, res) => {
 })
 
 // 🗂️ Serve static files in production (frontend deployment)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../../frontend/dist')))
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'))
-  })
-}
 
 // ❌ 404 Handler (consistent format)
 app.use((req, res) => {
