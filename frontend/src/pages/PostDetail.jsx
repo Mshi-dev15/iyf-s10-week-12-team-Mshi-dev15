@@ -164,7 +164,8 @@ export default function PostDetail() {
   if (!post) return <div className="text-center py-12">Post not found</div>
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 pb-12">
+      <div className="max-w-5xl mx-auto space-y-8 p-6">
       {/* Back Button */}
       <Link to="/posts" className="inline-flex items-center text-blue-600 hover:underline font-medium">
         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +175,7 @@ export default function PostDetail() {
       </Link>
 
       {/* Main Post Card */}
-      <Card className="p-8 shadow-xl border-0">
+      <Card className="p-8 shadow-2xl border-0 bg-white/95 backdrop-blur-sm animate-fade-in border-gradient">
         {/* Category Badge */}
         <div className="mb-6">
           <span className={`
@@ -190,7 +191,7 @@ export default function PostDetail() {
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">{post.title}</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-6 leading-tight text-shadow-lg animate-slide-in-left">{post.title}</h1>
         
         {/* Author & Meta Info */}
         <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-200">
@@ -302,9 +303,9 @@ export default function PostDetail() {
       </Card>
 
       {/* Comments Section */}
-      <Card className="p-8 shadow-xl border-0">
+      <Card className="p-8 shadow-2xl border-0 bg-white/95 backdrop-blur-sm animate-slide-in-right border-gradient">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gradient text-shadow">
             Comments ({comments.length})
           </h2>
         </div>
@@ -383,6 +384,7 @@ export default function PostDetail() {
           )}
         </div>
       </Card>
+      </div>
     </div>
   )
 }

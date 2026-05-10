@@ -89,26 +89,28 @@ export default function Posts() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          {categoryFilter ? `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Opportunities` : 'All Opportunities'}
-        </h1>
-        <p className="text-gray-600">
-          {posts.length} {posts.length === 1 ? 'opportunity' : 'opportunities'} found
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+      <div className="max-w-6xl mx-auto p-6">
+        {/* Header */}
+        <div className="mb-8 animate-fade-in">
+          <h1 className="text-5xl font-bold text-gradient mb-3 text-shadow">
+            {categoryFilter ? `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Opportunities` : 'All Opportunities'}
+          </h1>
+          <p className="text-gray-600 text-lg">
+            {posts.length} {posts.length === 1 ? 'opportunity' : 'opportunities'} found
+          </p>
+        </div>
       
       {/* Posts List */}
       <div className="space-y-4">
-        {posts.map((post) => (
+        {posts.map((post, index) => (
           <Link 
             key={post._id || post.id} 
             to={`/posts/${post._id || post.id}`}
-            className="block group"
+            className="block group animate-fade-in"
+            style={{animationDelay: `${index * 0.05}s`}}
           >
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-blue-300">
+            <div className="card-modern hover-lift bg-white/90 backdrop-blur-sm border-gradient p-6">
               <div className="flex items-start gap-4">
                 {/* Author Avatar */}
                 <div className="flex-shrink-0">
@@ -116,10 +118,10 @@ export default function Posts() {
                     <img 
                       src={post.author.profile.avatar} 
                       alt={post.author.username}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-400 transition"
+                      className="w-14 h-14 rounded-full object-cover border-3 border-gradient-to-br from-blue-400 to-purple-500 group-hover:border-blue-500 transition shadow-lg"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-lg border-2 border-gray-200 group-hover:border-blue-400 transition">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl border-3 border-white shadow-lg group-hover:scale-110 transition-transform">
                       {getUserInitials(post.author?.username || post.author?.profile?.firstName || 'U')}
                     </div>
                   )}
@@ -129,7 +131,7 @@ export default function Posts() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <div className="flex-1">
-                      <h3 className="font-bold text-xl text-gray-900 group-hover:text-blue-600 transition line-clamp-2">
+                      <h3 className="font-bold text-xl text-gray-900 group-hover:text-gradient transition line-clamp-2 text-shadow">
                         {post.title}
                       </h3>
                       
@@ -218,6 +220,7 @@ export default function Posts() {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   )
