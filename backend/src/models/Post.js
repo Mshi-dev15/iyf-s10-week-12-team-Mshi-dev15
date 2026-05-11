@@ -29,16 +29,40 @@ const postSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  votes: {
-    upvotes: { type: Number, default: 0 },
-    downvotes: { type: Number, default: 0 },
-    netScore: { type: Number, default: 0 } // upvotes - downvotes
+  likes: {
+    type: Number,
+    default: 0
   },
-  userVotes: [{ // Track which users voted to prevent double voting
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    voteType: { type: String, enum: ['upvote', 'downvote'] },
-    votedAt: { type: Date, default: Date.now }
+  upvotes: {
+    type: Number,
+    default: 0
+  },
+  downvotes: {
+    type: Number,
+    default: 0
+  },
+  votedBy: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    voteType: {
+      type: String,
+      enum: ['upvote', 'downvote']
+    }
   }],
+  bookmarkedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  views: {
+    type: Number,
+    default: 0
+  },
+  shares: {
+    type: Number,
+    default: 0
+  },
   tags: [{
     type: String,
     trim: true,
@@ -71,61 +95,100 @@ postSchema.methods.incrementLikes = function() {
   return this.save()
 }
 
+// 👆 Instance method: handle upvote/downvote
+postSchema.methods.vote = function(userId, voteType) {
+  const existingVote = this.votedBy.find(v => v.user.toString() === userId.toString())
+  
+  if (existingVote) {
+    // Remove old vote effect
+    if (existingVote.voteType === 'upvote') {
+      this.upvotes = Math.max(0, this.upvotes - 1)
+    } else if (existingVote.voteType === 'downvote') {
+      this.downvotes = Math.max(0, this.downvotes - 1)
+    }
+    
+    // If same vote type, remove it (toggle off)
+    if (existingVote.voteType === voteType) {
+      this.votedBy = this.votedBy.filter(v => v.user.toString() !== userId.toString())
+    } else {
+      // Change vote type
+      existingVote.voteType = voteType
+      if (voteType === 'upvote') {
+        this.upvotes += 1
+      } else {
+        this.downvotes += 1
+      }
+    }
+  } else {
+    // New vote
+    this.votedBy.push({ user: userId, voteType })
+    if (voteType === 'upvote') {
+      this.upvotes += 1
+    } else {
+      this.downvotes += 1
+    }
+  }
+  
+  return this.save()
+}
+
 // 👤 Static method: find posts by author
 postSchema.statics.findByAuthor = function(authorId) {
   return this.find({ author: authorId }).sort({ createdAt: -1 })
 }
 
-// 🗳️ Instance method: handle voting
-postSchema.methods.addVote = function(userId, voteType) {
-  // Remove any existing vote from this user
-  this.userVotes = this.userVotes.filter(vote => vote.user.toString() !== userId.toString())
+// 🔖 Instance method: toggle bookmark
+postSchema.methods.toggleBookmark = function(userId) {
+  const isBookmarked = this.bookmarkedBy.includes(userId)
   
-  // Add new vote
-  this.userVotes.push({
-    user: userId,
-    voteType: voteType,
-    votedAt: new Date()
-  })
-  
-  // Update vote counts
-  if (voteType === 'upvote') {
-    this.votes.upvotes += 1
-  } else if (voteType === 'downvote') {
-    this.votes.downvotes += 1
+  if (isBookmarked) {
+    this.bookmarkedBy = this.bookmarkedBy.filter(id => id.toString() !== userId.toString())
+  } else {
+    this.bookmarkedBy.push(userId)
   }
-  
-  // Update net score
-  this.votes.netScore = this.votes.upvotes - this.votes.downvotes
   
   return this.save()
 }
 
-// 🗳️ Instance method: remove vote
-postSchema.methods.removeVote = function(userId) {
-  const existingVote = this.userVotes.find(vote => vote.user.toString() === userId.toString())
-  if (!existingVote) return this.save()
-  
-  // Remove the vote
-  this.userVotes = this.userVotes.filter(vote => vote.user.toString() !== userId.toString())
-  
-  // Update vote counts
-  if (existingVote.voteType === 'upvote') {
-    this.votes.upvotes = Math.max(0, this.votes.upvotes - 1)
-  } else if (existingVote.voteType === 'downvote') {
-    this.votes.downvotes = Math.max(0, this.votes.downvotes - 1)
-  }
-  
-  // Update net score
-  this.votes.netScore = this.votes.upvotes - this.votes.downvotes
-  
+// 👁️ Instance method: increment views
+postSchema.methods.incrementViews = function() {
+  this.views = (this.views || 0) + 1
   return this.save()
 }
 
-// 🗳️ Instance method: get user's vote
-postSchema.methods.getUserVote = function(userId) {
-  const vote = this.userVotes.find(vote => vote.user.toString() === userId.toString())
-  return vote ? vote.voteType : null
+// 🔗 Instance method: increment shares
+postSchema.methods.incrementShares = function() {
+  this.shares = (this.shares || 0) + 1
+  return this.save()
+}
+
+// 🔥 Static method: get trending posts (most engagement in last 7 days)
+postSchema.statics.getTrending = function(limit = 5) {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  
+  return this.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: sevenDaysAgo },
+        published: true
+      }
+    },
+    {
+      $addFields: {
+        engagementScore: {
+          $add: [
+            { $multiply: ['$upvotes', 2] },
+            { $multiply: ['$downvotes', -1] },
+            { $size: '$bookmarkedBy' },
+            { $multiply: ['$shares', 3] },
+            { $multiply: ['$views', 0.1] }
+          ]
+        }
+      }
+    },
+    { $sort: { engagementScore: -1 } },
+    { $limit: limit }
+  ])
 }
 
 module.exports = mongoose.model('Post', postSchema)

@@ -1,110 +1,188 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import Card from '../components/shared/Card'
-import Button from '../components/shared/Button'
-import PagePlaceholder from '../components/shared/PagePlaceholder'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { createComment, getComments, getPost, votePost } from '../services/postsAPI'
-
-const getAuthorName = (author) => {
-  if (!author) return 'Unknown'
-  if (author.username) return author.username
-  const name = `${author.profile?.firstName || ''} ${author.profile?.lastName || ''}`.trim()
-  return name || author.email || 'Unknown'
-}
+import Card from '../components/shared/Card'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
+import { getPostById } from '../services/postsAPI'
+import { votePost } from '../services/votesAPI'
+import { getComments, createComment } from '../services/commentsAPI'
+import { toggleBookmark, sharePost } from '../services/engagementAPI'
 
 export default function PostDetail() {
   const { postId } = useParams()
-  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  
   const [post, setPost] = useState(null)
   const [comments, setComments] = useState([])
-  const [commentText, setCommentText] = useState('')
   const [loading, setLoading] = useState(true)
-  const [commenting, setCommenting] = useState(false)
-  const [liking, setLiking] = useState(false)
   const [error, setError] = useState(null)
-  const [commentError, setCommentError] = useState(null)
-  const [likeError, setLikeError] = useState(null)
+  const [voting, setVoting] = useState(false)
+  const [bookmarking, setBookmarking] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  
+  // Comment form state
+  const [commentText, setCommentText] = useState('')
+  const [submittingComment, setSubmittingComment] = useState(false)
 
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true)
-        const [postData, commentData] = await Promise.all([
-          getPost(postId),
-          getComments(postId)
-        ])
-        setPost(postData)
-        setComments(commentData)
+        
+        // Fetch post details
+        const postResponse = await getPostById(postId)
+        if (postResponse.data.success) {
+          setPost(postResponse.data.data)
+        }
+        
+        // Fetch comments
+        const commentsResponse = await getComments(postId)
+        if (commentsResponse.data.success) {
+          setComments(commentsResponse.data.data || [])
+        }
       } catch (err) {
-        setError(err.response?.data?.error?.message || err.message || 'Failed to load post')
+        setError(err.response?.data?.error?.message || err.message)
       } finally {
         setLoading(false)
       }
     }
-
-    fetchPost()
+    
+    fetchData()
   }, [postId])
 
-  const handleCommentSubmit = async (e) => {
+  const handleVote = async (voteType) => {
+    if (!user) {
+      alert('Please login to vote on posts')
+      return
+    }
+
+    setVoting(true)
+    try {
+      const response = await votePost(postId, voteType)
+      if (response.data.success) {
+        setPost(response.data.data)
+      }
+    } catch (err) {
+      console.error('Vote failed:', err)
+      alert('Failed to vote. Please try again.')
+    } finally {
+      setVoting(false)
+    }
+  }
+
+  const handleSubmitComment = async (e) => {
     e.preventDefault()
-    setCommentError(null)
+    
+    if (!user) {
+      alert('Please login to comment')
+      return
+    }
 
     if (!commentText.trim()) {
-      setCommentError('Comment cannot be empty')
+      alert('Please enter a comment')
       return
     }
 
-    setCommenting(true)
-
+    setSubmittingComment(true)
     try {
-      const newComment = await createComment(postId, { content: commentText })
-      setComments((current) => [newComment, ...current])
-      setCommentText('')
+      const response = await createComment(postId, { content: commentText })
+      if (response.data.success) {
+        setComments(prev => [...prev, response.data.data])
+        setCommentText('')
+      }
     } catch (err) {
-      setCommentError(err.response?.data?.error?.message || err.message || 'Failed to add comment')
+      console.error('Comment failed:', err)
+      alert('Failed to post comment. Please try again.')
     } finally {
-      setCommenting(false)
+      setSubmittingComment(false)
     }
   }
 
-  const handleVote = async (voteType) => {
-    setLikeError(null)
-
-    if (!isAuthenticated) {
-      setLikeError('Please sign in to vote on this opportunity')
+  const handleBookmark = async () => {
+    if (!user) {
+      alert('Please login to bookmark posts')
       return
     }
 
-    setLiking(true)
-
+    setBookmarking(true)
     try {
-      const updatedPost = await votePost(postId, voteType)
-      setPost(updatedPost)
+      const response = await toggleBookmark(postId)
+      if (response.data.success) {
+        setPost(response.data.data)
+      }
     } catch (err) {
-      setLikeError(err.response?.data?.error?.message || err.message || 'Failed to vote on post')
+      console.error('Bookmark failed:', err)
     } finally {
-      setLiking(false)
+      setBookmarking(false)
     }
   }
 
-  if (loading) return <PagePlaceholder type="detail" />
-  if (error) return <div className="text-center py-12 text-red-600">Error: {error}</div>
+  const handleShare = async () => {
+    setSharing(true)
+    try {
+      await sharePost(postId)
+      
+      // Copy link to clipboard
+      const url = window.location.href
+      await navigator.clipboard.writeText(url)
+      
+      alert('Link copied to clipboard! 🎉')
+      
+      // Update share count
+      setPost(prev => ({
+        ...prev,
+        shares: (prev.shares || 0) + 1
+      }))
+    } catch (err) {
+      console.error('Share failed:', err)
+      // Fallback: just copy link
+      const url = window.location.href
+      window.prompt('Copy this link:', url)
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  const getUserInitials = (username) => {
+    if (!username) return '?'
+    return username.charAt(0).toUpperCase()
+  }
+
+  if (loading) return <LoadingSpinner text="Loading post..." />
+  if (error) return (
+    <div className="text-center py-12">
+      <div className="text-red-600 text-lg mb-4">Error: {error}</div>
+      <button 
+        onClick={() => navigate('/posts')}
+        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+      >
+        Back to Posts
+      </button>
+    </div>
+  )
   if (!post) return <div className="text-center py-12">Post not found</div>
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Link to="/posts" className="text-blue-600 hover:underline">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 pb-12">
+      <div className="max-w-5xl mx-auto space-y-8 p-6">
+      {/* Back Button */}
+      <Link to="/posts" className="inline-flex items-center text-blue-600 hover:underline font-medium">
+        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
         Back to Opportunities
       </Link>
 
-      <Card className="p-6 md:p-8">
-        <div className="mb-4">
+      {/* Main Post Card */}
+      <Card className="p-8 shadow-2xl border-0 bg-white/95 backdrop-blur-sm animate-fade-in border-gradient">
+        {/* Category Badge */}
+        <div className="mb-6">
           <span className={`
-            inline-block px-3 py-1 text-sm font-medium rounded-full
+            inline-block px-4 py-2 text-sm font-semibold rounded-full
             ${post.category === 'internship' ? 'bg-blue-100 text-blue-800' : ''}
-            ${post.category === 'gig' ? 'bg-green-100 text-green-800' : ''}
-            ${post.category === 'volunteer' ? 'bg-purple-100 text-purple-800' : ''}
+            ${post.category === 'gig' ? 'bg-purple-100 text-purple-800' : ''}
+            ${post.category === 'volunteer' ? 'bg-green-100 text-green-800' : ''}
             ${post.category === 'event' ? 'bg-orange-100 text-orange-800' : ''}
             ${post.category === 'other' ? 'bg-gray-100 text-gray-800' : ''}
           `}>
@@ -112,134 +190,201 @@ export default function PostDetail() {
           </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">{post.title}</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              loading={liking}
-              disabled={liking}
-              onClick={() => handleVote('upvote')}
-              className="px-3 py-2"
-            >
-              👍 Upvote
-            </Button>
-            <span className="text-lg font-medium min-w-[2rem] text-center">
-              {post.votes?.netScore || post.likes || 0}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              loading={liking}
-              disabled={liking}
-              onClick={() => handleVote('downvote')}
-              className="px-3 py-2"
-            >
-              👎 Downvote
-            </Button>
+        {/* Title */}
+        <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-6 leading-tight text-shadow-lg animate-slide-in-left">{post.title}</h1>
+        
+        {/* Author & Meta Info */}
+        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-200">
+          {/* Author Avatar */}
+          <div className="flex-shrink-0">
+            {post.author?.profile?.avatar ? (
+              <img 
+                src={post.author.profile.avatar} 
+                alt={post.author.username}
+                className="w-14 h-14 rounded-full object-cover border-2 border-gray-200"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl">
+                {getUserInitials(post.author?.username || post.author?.profile?.firstName)}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <div className="font-semibold text-gray-900 text-lg">
+              {post.author?.username || `${post.author?.profile?.firstName || ''} ${post.author?.profile?.lastName || ''}`.trim() || 'Anonymous'}
+            </div>
+            <div className="flex items-center gap-3 text-sm text-gray-600 mt-1">
+              <span>{new Date(post.createdAt).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              {post.location && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {post.location}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {likeError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {likeError}
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-6">
-          <span>
-            By{' '}
-            <Link
-              to={`/users/${post.author?._id}`}
-              className="text-blue-600 hover:underline font-medium"
-            >
-              {getAuthorName(post.author)}
-            </Link>
-          </span>
-          <span>{new Date(post.createdAt).toLocaleDateString('en-KE')}</span>
-          {post.location && <span>{post.location}</span>}
-          {post.author?.profile?.phone && (
-            <Button
-              type="button"
-              variant="secondary"
-              size="small"
-              onClick={() => window.open(`tel:${post.author.profile.phone}`)}
-              className="text-xs"
-            >
-              📞 Call
-            </Button>
-          )}
-          {post.author?.email && (
-            <Button
-              type="button"
-              variant="secondary"
-              size="small"
-              onClick={() => window.open(`mailto:${post.author.email}`)}
-              className="text-xs"
-            >
-              ✉️ Email
-            </Button>
-          )}
+        {/* Content */}
+        <div className="prose prose-lg max-w-none mb-8">
+          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-lg">{post.content}</p>
         </div>
 
-        <div className="prose max-w-none mb-6">
-          <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
-        </div>
-
-        {post.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded">
+        {/* Tags */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {post.tags.map((tag, index) => (
+              <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full font-medium">
                 #{tag}
               </span>
             ))}
           </div>
         )}
+
+        {/* Voting Section */}
+        <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
+          <button
+            onClick={() => handleVote('upvote')}
+            disabled={voting}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition disabled:opacity-50 font-medium"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+            <span>{post.upvotes || 0} Upvotes</span>
+          </button>
+          
+          <button
+            onClick={() => handleVote('downvote')}
+            disabled={voting}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition disabled:opacity-50 font-medium"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span>{post.downvotes || 0} Downvotes</span>
+          </button>
+          
+          {/* Bookmark Button */}
+          <button
+            onClick={handleBookmark}
+            disabled={bookmarking}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition disabled:opacity-50 font-medium ${
+              post.bookmarkedBy?.includes(user?._id)
+                ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <svg className="w-5 h-5" fill={post.bookmarkedBy?.includes(user?._id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+            <span>{post.bookmarkedBy?.length || 0} Saved</span>
+          </button>
+          
+          {/* Share Button */}
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition disabled:opacity-50 font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            <span>{post.shares || 0} Shares</span>
+          </button>
+        </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Comments</h2>
+      {/* Comments Section */}
+      <Card className="p-8 shadow-2xl border-0 bg-white/95 backdrop-blur-sm animate-slide-in-right border-gradient">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-gradient text-shadow">
+            Comments ({comments.length})
+          </h2>
+        </div>
 
-        {isAuthenticated ? (
-          <form onSubmit={handleCommentSubmit} className="mb-6 space-y-3">
-            {commentError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                {commentError}
-              </div>
-            )}
+        {/* Comment Form */}
+        {user ? (
+          <form onSubmit={handleSubmitComment} className="mb-8">
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="Add a comment..."
+              placeholder="Share your thoughts..."
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              disabled={submittingComment}
             />
-            <Button type="submit" variant="primary" loading={commenting} disabled={commenting}>
-              Post Comment
-            </Button>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="submit"
+                disabled={submittingComment || !commentText.trim()}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {submittingComment ? 'Posting...' : 'Post Comment'}
+              </button>
+            </div>
           </form>
         ) : (
-          <p className="mb-6 text-gray-600">
-            <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link> to comment.
-          </p>
+          <div className="bg-gray-50 rounded-lg p-6 text-center mb-8">
+            <p className="text-gray-600 mb-3">Want to join the conversation?</p>
+            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+              Login to comment →
+            </Link>
+          </div>
         )}
 
-        <div className="space-y-4">
-          {comments.map((comment) => (
-            <div key={comment._id} className="border-b border-gray-100 pb-4 last:border-b-0">
-              <div className="text-sm text-gray-500 mb-1">
-                {getAuthorName(comment.author)} - {new Date(comment.createdAt).toLocaleDateString('en-KE')}
-              </div>
-              <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+        {/* Comments List */}
+        <div className="space-y-6">
+          {comments.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-3">💬</div>
+              <p>No comments yet. Be the first to share your thoughts!</p>
             </div>
-          ))}
-
-          {comments.length === 0 && (
-            <p className="text-gray-500">No comments yet.</p>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment._id} className="border-b border-gray-100 pb-6 last:border-0">
+                <div className="flex gap-4">
+                  {/* Commenter Avatar */}
+                  <div className="flex-shrink-0">
+                    {comment.author?.profile?.avatar ? (
+                      <img 
+                        src={comment.author.profile.avatar} 
+                        alt={comment.author.username}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-semibold">
+                        {getUserInitials(comment.author?.username || comment.author?.profile?.firstName)}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Comment Content */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="font-semibold text-gray-900">
+                        {comment.author?.username || comment.author?.profile?.firstName || 'Anonymous'}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {new Date(comment.createdAt).toLocaleDateString('en-KE')}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{comment.content}</p>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </Card>
+      </div>
     </div>
   )
 }

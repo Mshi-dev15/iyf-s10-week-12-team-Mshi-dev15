@@ -2,9 +2,10 @@
 const express = require('express')
 const router = express.Router()
 const { body, validationResult } = require('express-validator')
+const { protect } = require('../middleware/auth')
+
 // Import models
 const Post = require('../models/Post')
-const { protect } = require('../middleware/auth')
 
 // ✅ Register comments routes FIRST (nested under /api/posts/:postId/comments)
 router.use('/:postId/comments', require('./comments'))
@@ -34,8 +35,7 @@ router.get('/', async (req, res, next) => {
     const sortOptions = {
       newest: { createdAt: -1 },
       oldest: { createdAt: 1 },
-      popular: { 'votes.netScore': -1 },
-      trending: { 'votes.netScore': -1, createdAt: -1 }
+      popular: { likes: -1 }
     }
     const sortBy = req.query.sort || 'newest'
     const sort = sortOptions[sortBy] || sortOptions.newest
@@ -45,7 +45,7 @@ router.get('/', async (req, res, next) => {
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .populate('author', 'username email profile.firstName profile.lastName profile.county profile.phone profile.socials')
+      .populate('author', 'username email profile.firstName profile.lastName profile.county')
       .lean()
 
     const total = await Post.countDocuments(filter)
@@ -72,7 +72,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const post = await Post.findOne({ _id: req.params.id, published: true })
-      .populate('author', 'username email profile.firstName profile.lastName profile.county profile.phone profile.socials')
+      .populate('author', 'username email profile.firstName profile.lastName profile.county')
     
     if (!post) {
       return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
@@ -88,68 +88,7 @@ router.get('/:id', async (req, res, next) => {
 })
 
 // 🎯 CREATE new post (protected route - auth middleware applied in app.js)
-// Vote on a post (upvote/downvote)
-router.post('/:id/vote', protect, async (req, res, next) => {
-  try {
-    const { voteType } = req.body // 'upvote' or 'downvote'
-    
-    if (!['upvote', 'downvote'].includes(voteType)) {
-      return res.status(400).json({ success: false, error: { message: 'Invalid vote type', code: 'INVALID_VOTE' } })
-    }
-
-    const post = await Post.findOne({ _id: req.params.id, published: true })
-    
-    if (!post) {
-      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
-    }
-
-    // Check if user already voted
-    const existingVote = post.getUserVote(req.user._id)
-    
-    if (existingVote === voteType) {
-      // User is trying to vote the same way again - remove the vote
-      await post.removeVote(req.user._id)
-    } else {
-      // Add or change the vote
-      await post.addVote(req.user._id, voteType)
-    }
-
-    const updatedPost = await Post.findById(post._id)
-      .populate('author', 'username email profile.firstName profile.lastName profile.phone profile.socials')
-
-    res.status(200).json({ success: true, data: updatedPost })
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ success: false, error: { message: 'Invalid post ID format', code: 'CAST_ERROR' } })
-    }
-    next(error)
-  }
-})
-
-// Legacy like route for backward compatibility
-router.post('/:id/like', protect, async (req, res, next) => {
-  try {
-    const post = await Post.findOneAndUpdate(
-      { _id: req.params.id, published: true },
-      { $inc: { 'votes.upvotes': 1, 'votes.netScore': 1 } },
-      { new: true, runValidators: true }
-    ).populate('author', 'username email profile.firstName profile.lastName')
-
-    if (!post) {
-      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
-    }
-
-    res.status(200).json({ success: true, data: post })
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ success: false, error: { message: 'Invalid post ID format', code: 'CAST_ERROR' } })
-    }
-    next(error)
-  }
-})
-
 router.post('/',
-  protect,
   [
     body('title').trim().isLength({ min: 3, max: 200 }).withMessage('Title must be 3-200 characters'),
     body('content').trim().isLength({ min: 10 }).withMessage('Content must be at least 10 characters'),
@@ -163,7 +102,7 @@ router.post('/',
     try {
       const post = await Post.create({
         ...req.body,
-        author: req.user._id, // Requires auth middleware to set req.user
+        author: req.user?._id, // Requires auth middleware to set req.user
         likes: 0
       })
 
@@ -177,7 +116,6 @@ router.post('/',
 
 // 🎯 UPDATE post (protected route - author-only authorization handled in controller/middleware)
 router.put('/:id',
-  protect,
   [
     body('title').optional().trim().isLength({ min: 3, max: 200 }),
     body('content').optional().trim().isLength({ min: 10 }),
@@ -190,7 +128,7 @@ router.put('/:id',
 
     try {
       const post = await Post.findOneAndUpdate(
-        { _id: req.params.id, author: req.user._id }, // Only allow author to update
+        { _id: req.params.id, author: req.user?._id }, // Only allow author to update
         { $set: req.body },
         { new: true, runValidators: true }
       ).populate('author', 'username email profile.firstName profile.lastName')
@@ -207,10 +145,10 @@ router.put('/:id',
 )
 
 // 🎯 DELETE post (soft delete - protected route)
-router.delete('/:id', protect, async (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   try {
     const post = await Post.findOneAndUpdate(
-      { _id: req.params.id, author: req.user._id }, // Only allow author to delete
+      { _id: req.params.id, author: req.user?._id }, // Only allow author to delete
       { $set: { published: false, deletedAt: new Date() } }, // Soft delete via published flag
       { new: true }
     )
@@ -220,6 +158,92 @@ router.delete('/:id', protect, async (req, res, next) => {
     }
 
     res.status(200).json({ success: true, message: 'Post deleted successfully', data: { id: post._id } })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🎯 VOTE on post (upvote/downvote - protected route)
+router.post('/:id/vote', protect, async (req, res, next) => {
+  try {
+    const { voteType } = req.body
+    
+    if (!['upvote', 'downvote'].includes(voteType)) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid vote type', code: 'VALIDATION_ERROR' } })
+    }
+
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.vote(req.user._id, voteType)
+    
+    // Re-fetch with populated author
+    const updatedPost = await Post.findById(post._id)
+      .populate('author', 'username email profile.firstName profile.lastName profile.avatar')
+
+    res.status(200).json({ success: true, data: updatedPost })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔖 BOOKMARK/UNBOOKMARK post (protected route)
+router.post('/:id/bookmark', protect, async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.toggleBookmark(req.user._id)
+    
+    const updatedPost = await Post.findById(post._id)
+      .populate('author', 'username email profile.firstName profile.lastName profile.avatar')
+
+    res.status(200).json({ 
+      success: true, 
+      data: updatedPost,
+      bookmarked: updatedPost.bookmarkedBy.includes(req.user._id)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔗 SHARE post (increment share count)
+router.post('/:id/share', async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.incrementShares()
+    
+    res.status(200).json({ success: true, shares: post.shares })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔥 GET trending posts (most engagement)
+router.get('/trending', async (req, res, next) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5
+    const trendingPosts = await Post.getTrending(limit)
+    
+    // Populate author information
+    const populatedPosts = await Post.populate(trendingPosts, {
+      path: 'author',
+      select: 'username email profile.firstName profile.lastName profile.avatar'
+    })
+
+    res.status(200).json({ success: true, data: populatedPosts })
   } catch (error) {
     next(error)
   }
