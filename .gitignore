@@ -27,3 +27,6 @@ dist-ssr
 CommunityHub Starter Templates.txt
 *.md
 !README.md
+
+# PowerShell scripts
+*.ps1
