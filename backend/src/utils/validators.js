@@ -16,9 +16,13 @@ const handleValidationErrors = (req, res, next) => {
 const registerValidator = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('firstName').trim().notEmpty().withMessage('First name is required'),
-  body('lastName').trim().notEmpty().withMessage('Last name is required'),
-  body('county').trim().notEmpty().withMessage('County is required'),
+   body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+  
+    // ✅ Nested profile fields (matches your frontend structure)
+  body('profile.firstName').trim().notEmpty().withMessage('First name is required'),
+  body('profile.firstName').trim().notEmpty().withMessage('First name is required'),
+  body('profile.lastName').trim().notEmpty().withMessage('Last name is required'),
+  body('profile.county').trim().notEmpty().withMessage('County is required'),
   body('role').optional().isIn(['youth', 'organization']).withMessage('Role must be youth or organization'),
   handleValidationErrors
 ]

@@ -1,13 +1,14 @@
 const express = require('express')
 const router = express.Router()
 
+const { registerValidator, loginValidator } = require('../utils/validators')
+
 const { register, login, logout, getMe, updateProfile } = require('../controllers/authController')
 const { protect } = require('../middleware/auth')
 
 // TEMPORARY: Bypass validators for demo (frontend handles validation)
 // The validators expect flat fields, but our controller uses nested profile
-const registerValidator = (req, res, next) => next()
-const loginValidator = (req, res, next) => next()
+
 
 // @route   POST /api/auth/register
 // @desc    Register new user
