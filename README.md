@@ -1,16 +1,121 @@
-# React + Vite
+# Week 12: BridgeKE - Authentication System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Author
+- **Name:** Mshi Dev15 & Team
+- **GitHub:** [@Mshi-dev15](https://github.com/Mshi-dev15)
+- **Date:** May 9, 2026
+- **Program:** IYF Weekend Academy — Season 10
 
-Currently, two official plugins are available:
+## Project Description
+BridgeKE is a full-stack MERN application connecting Kenyan youth with opportunities. This week we implemented a complete, secure authentication system with JWT tokens, password hashing, protected routes, and production deployment.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Technologies Used
+### Backend
+- Node.js + Express.js
+- MongoDB + Mongoose
+- JWT (jsonwebtoken) for authentication
+- bcryptjs for password hashing
+- CORS, Helmet, express-rate-limit for security
 
-## React Compiler
+### Frontend
+- React + Vite
+- Axios for API calls
+- React Router for navigation
+- Tailwind CSS for styling
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Deployment
+- Render (Backend)
+- Vercel (Frontend)
+- MongoDB Atlas (Database)
 
-## Expanding the ESLint configuration
+## Features
+✅ User registration with validation (username, email, password, profile)  
+✅ Secure login with JWT token generation  
+✅ Password hashing with bcrypt (never stored in plaintext)  
+✅ Protected routes middleware (`protect`, `restrictTo`)  
+✅ CORS configuration for cross-origin requests  
+✅ Input validation with express-validator  
+✅ Role-based access control (`youth`, `organization`, `admin`)  
+✅ Geospatial indexing for Kenya location features  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## API Endpoints
+POST /api/auth/register → Register new user
+POST /api/auth/login → Login + receive JWT token
+GET /api/auth/me → Get current user (protected)
+PUT /api/auth/me → Update user profile (protected)
+GET /api/health → Health check endpoint
+
+
+## How to Run Locally
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Mshi-dev15/iyf-s10-week-12-Mshi-dev15.git
+cd iyf-s10-week-12-Mshi-dev15
+
+# 2. Setup Backend
+cd backend
+npm install
+# Create .env file with:
+# MONGODB_URI=your_mongodb_connection_string
+# JWT_SECRET=your_super_secret_key_min_32_chars
+# FRONTEND_URL=http://localhost:5173
+npm run dev  # Starts on http://localhost:3000
+
+# 3. Setup Frontend (new terminal)
+cd frontend
+npm install
+npm run dev  # Starts on http://localhost:5173
+
+# 4. Test API
+curl http://localhost:3000/api/health
+
+## Live Demo
+🔗 Frontend: [https://bridgeke-frontend.vercel.app](https://bridgeke-frontend.vercel.app)  
+🔗 Backend API: [https://bridgeke-api.onrender.com/api/health](https://bridgeke-api.onrender.com/api/health)
+
+## Lessons Learned
+- **Git Merge Conflicts**: Learned systematic conflict resolution using `git checkout --theirs` and careful code review across 10+ files.
+- **CORS Configuration**: Understood preflight requests, `OPTIONS` method, and dynamic origin validation for production.
+- **Nested Data Structures**: Mapped flat API input to nested Mongoose schemas while maintaining backward compatibility.
+- **Environment Management**: Secured secrets with `.env` files locally and platform env vars in production.
+- **Full-Stack Debugging**: Used `curl` to isolate frontend vs backend issues before assuming CORS errors.
+
+## Challenges Faced
+| Challenge | Solution |
+|-----------|----------|
+| Merge conflicts in multiple files | Used `git checkout --theirs` for remote-approved code, verified each file manually |
+| CORS errors in production | Added `'OPTIONS'` to CORS methods, fixed callback typo, set `FRONTEND_URL` env var |
+| 404 errors on API routes | Updated Vercel `VITE_API_URL` env var to include `/api` prefix |
+| Validator middleware field mismatch | Temporarily bypassed validator for demo; planned permanent fix |
+
+## Repository Structure
+iyf-s10-week-12-Mshi-dev15/
+├── backend/
+│   ├── src/
+│   │   ├── config/         # Database connection
+│   │   ├── controllers/    # Auth logic (register, login)
+│   │   ├── middleware/     # Auth, error handling, CORS
+│   │   ├── models/         # Mongoose User schema
+│   │   ├── routes/         # Express route definitions
+│   │   └── utils/          # Validators, helpers
+│   ├── .env.example        # Environment template
+│   ├── package.json        # Dependencies + scripts
+│   ├── server.js           # Entry point
+│   └── render.yaml         # Render deployment config
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── services/       # Axios API service
+│   │   ├── contexts/       # Auth context
+│   │   └── App.jsx         # Root component + routing
+│   ├── .env.example        # Vite env template
+│   ├── vite.config.js      # Vite configuration
+│   └── vercel.json         # Vercel deployment config
+│
+├── README.md               # This file
+├── CONTRIBUTORS.md         # Team contributions
+└── .gitignore              # Ignored files
+
+> 🇰🇪 Built with ❤️ for Kenyan youth by the IYF Weekend Academy Season 10 cohort.
