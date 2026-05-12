@@ -68,6 +68,25 @@ router.get('/', async (req, res, next) => {
   }
 })
 
+// 🔥 GET trending posts (most engagement)
+router.get('/trending', async (req, res, next) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5
+    const trendingPosts = await Post.getTrending(limit)
+    
+    // Populate author information
+    const populatedPosts = await Post.populate(trendingPosts, {
+      path: 'author',
+      select: 'username email profile.firstName profile.lastName profile.avatar'
+    })
+
+    res.status(200).json({ success: true, data: populatedPosts })
+  } catch (error) {
+    next(error)
+  }
+})
+
+
 // 🎯 GET single post
 router.get('/:id', async (req, res, next) => {
   try {
@@ -228,24 +247,6 @@ router.post('/:id/share', async (req, res, next) => {
     await post.incrementShares()
     
     res.status(200).json({ success: true, shares: post.shares })
-  } catch (error) {
-    next(error)
-  }
-})
-
-// 🔥 GET trending posts (most engagement)
-router.get('/trending', async (req, res, next) => {
-  try {
-    const limit = parseInt(req.query.limit) || 5
-    const trendingPosts = await Post.getTrending(limit)
-    
-    // Populate author information
-    const populatedPosts = await Post.populate(trendingPosts, {
-      path: 'author',
-      select: 'username email profile.firstName profile.lastName profile.avatar'
-    })
-
-    res.status(200).json({ success: true, data: populatedPosts })
   } catch (error) {
     next(error)
   }
