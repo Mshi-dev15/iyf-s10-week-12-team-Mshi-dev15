@@ -3,10 +3,10 @@
 // Wraps the whole app so any component can access the current user
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';  // ✅ Add this line
 
 const AuthContext = createContext(null);
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const getErrorMessage = (data, fallback) => (
     data?.error?.message || data?.message || data?.error || fallback
@@ -20,77 +20,62 @@ export function AuthProvider({ children }) {
 
     // ── Check for existing session on page load ───────────────────────────────
     // If a token exists in localStorage, fetch the current user from the API
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            fetch(`${API_URL}/auth/me`, {
-                headers: { Authorization: `Bearer ${token}` }
+   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        api.get('/auth/me')  // ✅ NEW: axios, token auto-added
+            .then((res) => {
+                const authUser = getAuthUser(res.data);  // Note: res.data, not res
+                if (authUser?._id) setUser(authUser);
+                else localStorage.removeItem('token');
             })
-                .then((res) => res.json())
-                .then((data) => {
-                    const authUser = getAuthUser(data);
-                    if (authUser?._id) setUser(authUser);
-                    else localStorage.removeItem('token'); // token is invalid
-                })
-                .catch(() => localStorage.removeItem('token'))
-                .finally(() => setLoading(false));
-        } else {
-            setLoading(false);
-        }
-    }, []);
+            .catch(() => localStorage.removeItem('token'))
+            .finally(() => setLoading(false));
+    } else {
+        setLoading(false);
+    }
+}, []);
 
     // ── Login ─────────────────────────────────────────────────────────────────
     const login = async (email, password) => {
-        const res = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(getErrorMessage(data, 'Login failed'));
-
-        const authUser = getAuthUser(data);
+    try {
+        const res = await api.post('/auth/login', { email, password });
+        const authUser = getAuthUser(res.data);
         localStorage.setItem('token', authUser.token);
         setUser(authUser);
         return authUser;
-    };
+    } catch (error) {
+        const data = error.response?.data;
+        throw new Error(getErrorMessage(data, 'Login failed'));
+    }
+};
 
     // ── Register ──────────────────────────────────────────────────────────────
     const register = async (userData) => {
-        const res = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(getErrorMessage(data, 'Registration failed'));
-
-        const authUser = getAuthUser(data);
+    try {
+        const res = await api.post('/auth/register', userData);  // ✅ NEW
+        const authUser = getAuthUser(res.data);
         localStorage.setItem('token', authUser.token);
         setUser(authUser);
         return authUser;
-    };
+    } catch (error) {
+        const data = error.response?.data;
+        throw new Error(getErrorMessage(data, 'Registration failed'));
+    }
+};
 
     // ── Logout ────────────────────────────────────────────────────────────────
     const logout = async () => {
-        const token = localStorage.getItem('token');
-
-        try {
-            if (token) {
-                await fetch(`${API_URL}/auth/logout`, {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            }
-        } finally {
-            localStorage.removeItem('token');
-            setUser(null);
-        }
-    };
+    try {
+        await api.post('/auth/logout');  // ✅ NEW: token auto-added, ignore response
+    } catch (error) {
+        // Ignore logout errors (token might already be expired)
+        console.warn('Logout API call failed:', error.message);
+    } finally {
+        localStorage.removeItem('token');
+        setUser(null);
+    }
+};
 
     const value = {
         user,
