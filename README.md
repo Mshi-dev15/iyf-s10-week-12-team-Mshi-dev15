@@ -6,8 +6,12 @@
 - **Date:** May 9, 2026
 - **Program:** IYF Weekend Academy — Season 10
 
+---
+
 ## Project Description
 BridgeKE is a full-stack MERN application connecting Kenyan youth with opportunities. This week we implemented a complete, secure authentication system with JWT tokens, password hashing, protected routes, and production deployment.
+
+---
 
 ## Technologies Used
 ### Backend
@@ -28,6 +32,8 @@ BridgeKE is a full-stack MERN application connecting Kenyan youth with opportuni
 - Vercel (Frontend)
 - MongoDB Atlas (Database)
 
+---
+
 ## Features
 ✅ User registration with validation (username, email, password, profile)  
 ✅ Secure login with JWT token generation  
@@ -36,19 +42,21 @@ BridgeKE is a full-stack MERN application connecting Kenyan youth with opportuni
 ✅ CORS configuration for cross-origin requests  
 ✅ Input validation with express-validator  
 ✅ Role-based access control (`youth`, `organization`, `admin`)  
-✅ Geospatial indexing for Kenya location features  
+✅ Geospatial indexing for Kenya location features 
+
+---
 
 ## API Endpoints
-POST /api/auth/register → Register new user
-POST /api/auth/login → Login + receive JWT token
-GET /api/auth/me → Get current user (protected)
-PUT /api/auth/me → Update user profile (protected)
-GET /api/health → Health check endpoint
+- POST /api/auth/register → Register new user
+- POST /api/auth/login → Login + receive JWT token
+- GET /api/auth/me → Get current user (protected)
+- PUT /api/auth/me → Update user profile (protected)
+- GET /api/health → Health check endpoint
 
+---
 
 ## How to Run Locally
 
-```bash
 # 1. Clone the repository
 git clone https://github.com/Mshi-dev15/iyf-s10-week-12-Mshi-dev15.git
 cd iyf-s10-week-12-Mshi-dev15
@@ -70,9 +78,13 @@ npm run dev  # Starts on http://localhost:5173
 # 4. Test API
 curl http://localhost:3000/api/health
 
+---
+
 ## Live Demo
 🔗 Frontend: [https://bridgeke-frontend.vercel.app](https://bridgeke-frontend.vercel.app)  
 🔗 Backend API: [https://bridgeke-api.onrender.com/api/health](https://bridgeke-api.onrender.com/api/health)
+
+---
 
 ## Lessons Learned
 - **Git Merge Conflicts**: Learned systematic conflict resolution using `git checkout --theirs` and careful code review across 10+ files.
@@ -80,6 +92,8 @@ curl http://localhost:3000/api/health
 - **Nested Data Structures**: Mapped flat API input to nested Mongoose schemas while maintaining backward compatibility.
 - **Environment Management**: Secured secrets with `.env` files locally and platform env vars in production.
 - **Full-Stack Debugging**: Used `curl` to isolate frontend vs backend issues before assuming CORS errors.
+
+---
 
 ## Challenges Faced
 | Challenge | Solution |
@@ -89,33 +103,5 @@ curl http://localhost:3000/api/health
 | 404 errors on API routes | Updated Vercel `VITE_API_URL` env var to include `/api` prefix |
 | Validator middleware field mismatch | Temporarily bypassed validator for demo; planned permanent fix |
 
-## Repository Structure
-iyf-s10-week-12-Mshi-dev15/
-├── backend/
-│   ├── src/
-│   │   ├── config/         # Database connection
-│   │   ├── controllers/    # Auth logic (register, login)
-│   │   ├── middleware/     # Auth, error handling, CORS
-│   │   ├── models/         # Mongoose User schema
-│   │   ├── routes/         # Express route definitions
-│   │   └── utils/          # Validators, helpers
-│   ├── .env.example        # Environment template
-│   ├── package.json        # Dependencies + scripts
-│   ├── server.js           # Entry point
-│   └── render.yaml         # Render deployment config
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── services/       # Axios API service
-│   │   ├── contexts/       # Auth context
-│   │   └── App.jsx         # Root component + routing
-│   ├── .env.example        # Vite env template
-│   ├── vite.config.js      # Vite configuration
-│   └── vercel.json         # Vercel deployment config
-│
-├── README.md               # This file
-├── CONTRIBUTORS.md         # Team contributions
-└── .gitignore              # Ignored files
 
 > 🇰🇪 Built with ❤️ for Kenyan youth by the IYF Weekend Academy Season 10 cohort.
