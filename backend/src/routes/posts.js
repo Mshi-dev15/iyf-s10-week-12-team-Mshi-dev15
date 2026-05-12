@@ -89,6 +89,7 @@ router.get('/:id', async (req, res, next) => {
 
 // 🎯 CREATE new post (protected route - auth middleware applied in app.js)
 router.post('/',
+  protect,
   [
     body('title').trim().isLength({ min: 3, max: 200 }).withMessage('Title must be 3-200 characters'),
     body('content').trim().isLength({ min: 10 }).withMessage('Content must be at least 10 characters'),
@@ -116,6 +117,7 @@ router.post('/',
 
 // 🎯 UPDATE post (protected route - author-only authorization handled in controller/middleware)
 router.put('/:id',
+  protect,
   [
     body('title').optional().trim().isLength({ min: 3, max: 200 }),
     body('content').optional().trim().isLength({ min: 10 }),
@@ -145,7 +147,7 @@ router.put('/:id',
 )
 
 // 🎯 DELETE post (soft delete - protected route)
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', protect, async (req, res, next) => {
   try {
     const post = await Post.findOneAndUpdate(
       { _id: req.params.id, author: req.user?._id }, // Only allow author to delete
