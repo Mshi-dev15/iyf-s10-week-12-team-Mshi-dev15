@@ -1,10 +1,26 @@
 # Week 12: BridgeKE - Authentication System
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-v24.14.0-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Express.js-4.x-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express">
+  <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB">
+  <img src="https://img.shields.io/badge/Mongoose-ODM-880000?style=for-the-badge&logo=mongoose&logoColor=white" alt="Mongoose">
+  <img src="https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white" alt="JWT">
+  <img src="https://img.shields.io/badge/Bcrypt-Password_Hashing-FCD022?style=for-the-badge&logo=bcrypt&logoColor=black" alt="Bcrypt">
+</p>
+
+---
+
 ## Author
 - **Name:** Mshi Dev15 & Team
 - **GitHub:** [@Mshi-dev15](https://github.com/Mshi-dev15)
 - **Date:** May 9, 2026
 - **Program:** IYF Weekend Academy — Season 10
+
+---
+
+## 👥 Team & Contributions
+This is a team project. See [CONTRIBUTORS.md](./CONTRIBUTORS.md) for full team member details, roles, and individual contributions.
 
 ---
 
@@ -93,6 +109,7 @@ curl http://localhost:3000/api/health
 🔗 Backend API: [https://bridgeke-api.onrender.com/api/health](https://bridgeke-api.onrender.com/api/health)
 
 ---
+
 
 ## Lessons Learned
 - **Git Merge Conflicts**: Learned systematic conflict resolution using `git checkout --theirs` and careful code review across 10+ files.
