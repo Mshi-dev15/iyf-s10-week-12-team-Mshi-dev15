@@ -71,7 +71,9 @@ const postSchema = new mongoose.Schema({
   published: {
     type: Boolean,
     default: true
-  }
+  },
+  // ✅ Soft delete tracking:
+  deletedAt: { type: Date, default: null }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
