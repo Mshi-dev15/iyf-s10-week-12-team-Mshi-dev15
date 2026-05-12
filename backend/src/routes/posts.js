@@ -2,6 +2,7 @@
 const express = require('express')
 const router = express.Router()
 const { body, validationResult } = require('express-validator')
+const { protect } = require('../middleware/auth')
 
 // Import models
 const Post = require('../models/Post')
@@ -157,6 +158,92 @@ router.delete('/:id', async (req, res, next) => {
     }
 
     res.status(200).json({ success: true, message: 'Post deleted successfully', data: { id: post._id } })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🎯 VOTE on post (upvote/downvote - protected route)
+router.post('/:id/vote', protect, async (req, res, next) => {
+  try {
+    const { voteType } = req.body
+    
+    if (!['upvote', 'downvote'].includes(voteType)) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid vote type', code: 'VALIDATION_ERROR' } })
+    }
+
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.vote(req.user._id, voteType)
+    
+    // Re-fetch with populated author
+    const updatedPost = await Post.findById(post._id)
+      .populate('author', 'username email profile.firstName profile.lastName profile.avatar')
+
+    res.status(200).json({ success: true, data: updatedPost })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔖 BOOKMARK/UNBOOKMARK post (protected route)
+router.post('/:id/bookmark', protect, async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.toggleBookmark(req.user._id)
+    
+    const updatedPost = await Post.findById(post._id)
+      .populate('author', 'username email profile.firstName profile.lastName profile.avatar')
+
+    res.status(200).json({ 
+      success: true, 
+      data: updatedPost,
+      bookmarked: updatedPost.bookmarkedBy.includes(req.user._id)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔗 SHARE post (increment share count)
+router.post('/:id/share', async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: { message: 'Post not found', code: 'NOT_FOUND' } })
+    }
+
+    await post.incrementShares()
+    
+    res.status(200).json({ success: true, shares: post.shares })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 🔥 GET trending posts (most engagement)
+router.get('/trending', async (req, res, next) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5
+    const trendingPosts = await Post.getTrending(limit)
+    
+    // Populate author information
+    const populatedPosts = await Post.populate(trendingPosts, {
+      path: 'author',
+      select: 'username email profile.firstName profile.lastName profile.avatar'
+    })
+
+    res.status(200).json({ success: true, data: populatedPosts })
   } catch (error) {
     next(error)
   }

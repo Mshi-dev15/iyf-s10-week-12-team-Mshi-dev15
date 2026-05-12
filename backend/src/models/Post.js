@@ -33,6 +33,36 @@ const postSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  upvotes: {
+    type: Number,
+    default: 0
+  },
+  downvotes: {
+    type: Number,
+    default: 0
+  },
+  votedBy: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    voteType: {
+      type: String,
+      enum: ['upvote', 'downvote']
+    }
+  }],
+  bookmarkedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  views: {
+    type: Number,
+    default: 0
+  },
+  shares: {
+    type: Number,
+    default: 0
+  },
   tags: [{
     type: String,
     trim: true,
@@ -65,9 +95,100 @@ postSchema.methods.incrementLikes = function() {
   return this.save()
 }
 
+// 👆 Instance method: handle upvote/downvote
+postSchema.methods.vote = function(userId, voteType) {
+  const existingVote = this.votedBy.find(v => v.user.toString() === userId.toString())
+  
+  if (existingVote) {
+    // Remove old vote effect
+    if (existingVote.voteType === 'upvote') {
+      this.upvotes = Math.max(0, this.upvotes - 1)
+    } else if (existingVote.voteType === 'downvote') {
+      this.downvotes = Math.max(0, this.downvotes - 1)
+    }
+    
+    // If same vote type, remove it (toggle off)
+    if (existingVote.voteType === voteType) {
+      this.votedBy = this.votedBy.filter(v => v.user.toString() !== userId.toString())
+    } else {
+      // Change vote type
+      existingVote.voteType = voteType
+      if (voteType === 'upvote') {
+        this.upvotes += 1
+      } else {
+        this.downvotes += 1
+      }
+    }
+  } else {
+    // New vote
+    this.votedBy.push({ user: userId, voteType })
+    if (voteType === 'upvote') {
+      this.upvotes += 1
+    } else {
+      this.downvotes += 1
+    }
+  }
+  
+  return this.save()
+}
+
 // 👤 Static method: find posts by author
 postSchema.statics.findByAuthor = function(authorId) {
   return this.find({ author: authorId }).sort({ createdAt: -1 })
+}
+
+// 🔖 Instance method: toggle bookmark
+postSchema.methods.toggleBookmark = function(userId) {
+  const isBookmarked = this.bookmarkedBy.includes(userId)
+  
+  if (isBookmarked) {
+    this.bookmarkedBy = this.bookmarkedBy.filter(id => id.toString() !== userId.toString())
+  } else {
+    this.bookmarkedBy.push(userId)
+  }
+  
+  return this.save()
+}
+
+// 👁️ Instance method: increment views
+postSchema.methods.incrementViews = function() {
+  this.views = (this.views || 0) + 1
+  return this.save()
+}
+
+// 🔗 Instance method: increment shares
+postSchema.methods.incrementShares = function() {
+  this.shares = (this.shares || 0) + 1
+  return this.save()
+}
+
+// 🔥 Static method: get trending posts (most engagement in last 7 days)
+postSchema.statics.getTrending = function(limit = 5) {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  
+  return this.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: sevenDaysAgo },
+        published: true
+      }
+    },
+    {
+      $addFields: {
+        engagementScore: {
+          $add: [
+            { $multiply: ['$upvotes', 2] },
+            { $multiply: ['$downvotes', -1] },
+            { $size: '$bookmarkedBy' },
+            { $multiply: ['$shares', 3] },
+            { $multiply: ['$views', 0.1] }
+          ]
+        }
+      }
+    },
+    { $sort: { engagementScore: -1 } },
+    { $limit: limit }
+  ])
 }
 
 module.exports = mongoose.model('Post', postSchema)

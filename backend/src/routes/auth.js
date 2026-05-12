@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const { register, login, getMe, updateProfile } = require('../controllers/authController')
+const { register, login, logout, getMe, updateProfile } = require('../controllers/authController')
 const { protect } = require('../middleware/auth')
 
 // TEMPORARY: Bypass validators for demo (frontend handles validation)
@@ -16,6 +16,10 @@ router.post('/register', registerValidator, register)
 // @route   POST /api/auth/login
 // @desc    Login user
 router.post('/login', loginValidator, login)
+
+// @route   POST /api/auth/logout
+// @desc    Logout current user (protected)
+router.post('/logout', protect, logout)
 
 // @route   GET /api/auth/me
 // @desc    Get current user (protected)
