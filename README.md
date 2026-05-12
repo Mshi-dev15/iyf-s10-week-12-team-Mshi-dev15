@@ -62,13 +62,21 @@ git clone https://github.com/Mshi-dev15/iyf-s10-week-12-Mshi-dev15.git
 cd iyf-s10-week-12-Mshi-dev15
 
 ### 2. Setup Backend
+```bash
 cd backend
 npm install
-Create .env file with:
+```
+
+Create `.env` file with:
+```env
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_super_secret_key_min_32_chars
 FRONTEND_URL=http://localhost:5173
+```
+
+```bash
 npm run dev  # Starts on http://localhost:3000
+```
 
 ### 3. Setup Frontend (new terminal)
 cd frontend
@@ -101,7 +109,7 @@ curl http://localhost:3000/api/health
 | Merge conflicts in multiple files | Used `git checkout --theirs` for remote-approved code, verified each file manually |
 | CORS errors in production | Added `'OPTIONS'` to CORS methods, fixed callback typo, set `FRONTEND_URL` env var |
 | 404 errors on API routes | Updated Vercel `VITE_API_URL` env var to include `/api` prefix |
-| Validator middleware field mismatch | Temporarily bypassed validator for demo; planned permanent fix |
+| Validator middleware field mismatch | Updated validators to handle nested `profile` structure; backend now validates all input at API boundary  |
 
 ---
 
