@@ -57,25 +57,25 @@ BridgeKE is a full-stack MERN application connecting Kenyan youth with opportuni
 
 ## How to Run Locally
 
-# 1. Clone the repository
+### 1. Clone the repository
 git clone https://github.com/Mshi-dev15/iyf-s10-week-12-Mshi-dev15.git
 cd iyf-s10-week-12-Mshi-dev15
 
-# 2. Setup Backend
+### 2. Setup Backend
 cd backend
 npm install
-# Create .env file with:
-# MONGODB_URI=your_mongodb_connection_string
-# JWT_SECRET=your_super_secret_key_min_32_chars
-# FRONTEND_URL=http://localhost:5173
+Create .env file with:
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_key_min_32_chars
+FRONTEND_URL=http://localhost:5173
 npm run dev  # Starts on http://localhost:3000
 
-# 3. Setup Frontend (new terminal)
+### 3. Setup Frontend (new terminal)
 cd frontend
 npm install
 npm run dev  # Starts on http://localhost:5173
 
-# 4. Test API
+### 4. Test API
 curl http://localhost:3000/api/health
 
 ---
@@ -102,6 +102,8 @@ curl http://localhost:3000/api/health
 | CORS errors in production | Added `'OPTIONS'` to CORS methods, fixed callback typo, set `FRONTEND_URL` env var |
 | 404 errors on API routes | Updated Vercel `VITE_API_URL` env var to include `/api` prefix |
 | Validator middleware field mismatch | Temporarily bypassed validator for demo; planned permanent fix |
+
+---
 
 
 > 🇰🇪 Built with ❤️ for Kenyan youth by the IYF Weekend Academy Season 10 cohort.
