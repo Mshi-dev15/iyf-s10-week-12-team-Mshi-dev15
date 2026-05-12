@@ -20,6 +20,7 @@ export default function PostDetail() {
   const [voting, setVoting] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [msg, setMsg] = useState('') 
   
   // Comment form state
   const [commentText, setCommentText] = useState('')
@@ -51,12 +52,12 @@ export default function PostDetail() {
     fetchData()
   }, [postId])
 
-  const handleVote = async (voteType) => {
+    const handleVote = async (voteType) => {
     if (!user) {
-      alert('Please login to vote on posts')
+      setMsg('Please login to vote on posts')
+      setTimeout(() => setMsg(''), 3000)
       return
     }
-
     setVoting(true)
     try {
       const response = await votePost(postId, voteType)
@@ -65,22 +66,24 @@ export default function PostDetail() {
       }
     } catch (err) {
       console.error('Vote failed:', err)
-      alert('Failed to vote. Please try again.')
+      setMsg('Failed to vote. Please try again.')
+      setTimeout(() => setMsg(''), 3000)
     } finally {
       setVoting(false)
     }
   }
-
   const handleSubmitComment = async (e) => {
     e.preventDefault()
     
     if (!user) {
-      alert('Please login to comment')
+      setMsg('Please login to comment')
+      setTimeout(() => setMsg(''), 3000)
       return
     }
 
     if (!commentText.trim()) {
-      alert('Please enter a comment')
+      setMsg('Please enter a comment')
+      setTimeout(() => setMsg(''), 3000)
       return
     }
 
@@ -93,17 +96,20 @@ export default function PostDetail() {
       }
     } catch (err) {
       console.error('Comment failed:', err)
-      alert('Failed to post comment. Please try again.')
+      setMsg('Failed to post comment. Please try again.')
+      setTimeout(() => setMsg(''), 3000)
     } finally {
       setSubmittingComment(false)
     }
   }
-
-  const handleBookmark = async () => {
+  
+    const handleBookmark = async () => {
     if (!user) {
-      alert('Please login to bookmark posts')
+      setMsg('Please login to bookmark posts')
+      setTimeout(() => setMsg(''), 3000)
       return
     }
+    // ... rest unchanged
 
     setBookmarking(true)
     try {
@@ -123,11 +129,12 @@ export default function PostDetail() {
     try {
       await sharePost(postId)
       
-      // Copy link to clipboard
+            // Copy link to clipboard
       const url = window.location.href
       await navigator.clipboard.writeText(url)
       
-      alert('Link copied to clipboard! 🎉')
+      setMsg('Link copied to clipboard! 🎉')
+      setTimeout(() => setMsg(''), 3000)
       
       // Update share count
       setPost(prev => ({
@@ -166,6 +173,19 @@ export default function PostDetail() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 pb-12">
       <div className="max-w-5xl mx-auto space-y-8 p-6">
+
+                {/* ✅ Message Banner */}
+        {msg && (
+          <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg border border-blue-200 flex justify-between items-center animate-fade-in">
+            <span>{msg}</span>
+            <button 
+              onClick={() => setMsg('')} 
+              className="ml-2 text-blue-600 hover:text-blue-800 font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
       {/* Back Button */}
       <Link to="/posts" className="inline-flex items-center text-blue-600 hover:underline font-medium">
         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

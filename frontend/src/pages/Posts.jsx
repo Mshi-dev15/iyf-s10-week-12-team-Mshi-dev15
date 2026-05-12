@@ -13,6 +13,7 @@ export default function Posts() {
   
   const { data, loading, error, refetch } = useFetch(getPosts)
   const [posts, setPosts] = useState([])
+  const [msg, setMsg] = useState('')
   const [votingPosts, setVotingPosts] = useState({})
 
   useEffect(() => {
@@ -25,12 +26,12 @@ export default function Posts() {
     }
   }, [data, categoryFilter])
 
-  const handleVote = async (postId, voteType) => {
+    const handleVote = async (postId, voteType) => {
     if (!user) {
-      alert('Please login to vote on posts')
+      setMsg('Please login to vote on posts')  // ✅ NEW
+      setTimeout(() => setMsg(''), 3000)       // Auto-dismiss after 3s
       return
     }
-
     setVotingPosts(prev => ({ ...prev, [postId]: true }))
     try {
       const response = await votePost(postId, voteType)
@@ -44,7 +45,8 @@ export default function Posts() {
       }
     } catch (err) {
       console.error('Vote failed:', err)
-      alert('Failed to vote. Please try again.')
+      setMsg('Failed to vote. Please try again.')  // ✅ NEW
+      setTimeout(() => setMsg(''), 3000)
     } finally {
       setVotingPosts(prev => ({ ...prev, [postId]: false }))
     }
@@ -87,10 +89,26 @@ export default function Posts() {
       </div>
     )
   }
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
       <div className="max-w-6xl mx-auto p-6">
+       
+        {/* ✅ Message Banner */}
+        {msg && (
+          <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg border border-blue-200 flex justify-between items-center animate-fade-in">
+            <span>{msg}</span>
+            <button 
+              onClick={() => setMsg('')} 
+              className="ml-2 text-blue-600 hover:text-blue-800 font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+       
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <h1 className="text-5xl font-bold text-gradient mb-3 text-shadow">
