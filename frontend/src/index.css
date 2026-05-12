@@ -321,8 +321,16 @@ html {
 }
 
 .card-neumorphic {
-  @apply neu-flat p-6;
-  @apply hover:neu-pressed transition-all duration-300;
+  @apply p-6 transition-all duration-300;
+  box-shadow: 
+    8px 8px 16px #d1d5db,
+    -8px -8px 16px #ffffff;
+}
+
+.card-neumorphic:hover {
+  box-shadow: 
+    inset 8px 8px 16px #d1d5db,
+    inset -8px -8px 16px #ffffff;
 }
 
 /* ===== BADGE STYLES ===== */
