@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-const postSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema(
+  []
   title: {
     type: String,
     required: [true, 'Title is required'],
@@ -31,3 +32,7 @@ const postSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Post', postSchema);
+deletedAt: {
+  type: Date,
+  default: null
+}

@@ -1,5 +1,5 @@
 // frontend/src/pages/Posts.jsx
-export default function Posts() {
+export default function Posts() {}
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
