@@ -13,12 +13,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors
+// Handle 401 errors - logout user and redirect to login
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      console.log("Unauthorized - redirect to login");
+      // ✅ Clear expired token
+      localStorage.removeItem('token')
+      
+      // ✅ Redirect to login (hard redirect avoids React Router issues)
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(err);
   }
