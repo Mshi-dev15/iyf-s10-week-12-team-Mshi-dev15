@@ -30,3 +30,11 @@ CommunityHub Starter Templates.txt
 
 # PowerShell scripts
 *.ps1
+
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.production
+**/.env
+backend/.env
+frontend/.env
