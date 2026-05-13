@@ -29,18 +29,25 @@ BridgeKE is a full-stack MERN application connecting Kenyan youth with opportuni
 
 ---
 
+## 🔗 Live Demo
+
 ### Frontend
 [![Frontend](https://img.shields.io/badge/_Frontend-bridgeke--frontend.vercel.app-blue?style=for-the-badge&logo=vercel&logoColor=white)](https://iyf-s10-week-12-mshi-dev15.vercel.app/)
-![Status](https://img.shields.io/badge/Status-🟢_Live-success?style=flat-square)
-![React](https://img.shields.io/badge/React-18.x-61dafb?logo=react)
-![Vite](https://img.shields.io/badge/Vite-5.x-646cff?logo=vite)
+![Status](https://img.shields.io/badge/Status-🟢_Live-success)
+
+**Tech Stack:**
+![React](https://img.shields.io/badge/React-18.x-61dafb?logo=react&style=flat-square)
+![Vite](https://img.shields.io/badge/Vite-5.x-646cff?logo=vite&style=flat-square)
+
 
 ### Backend API
-[![Backend](https://img.shields.io/badge/🔌_API-bridgeke--api.onrender.com-ff6b6b?style=for-the-badge&logo=render&logoColor=white)](https://bridgeke-api.onrender.com/api/health)
-![Status](https://img.shields.io/badge/Status-🟢_Online-brightgreen?style=flat-square)
-![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?logo=node.js)
-![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)
+[![Backend](https://img.shields.io/badge/_API-bridgeke--api.onrender.com-ff6b6b?style=for-the-badge&logo=render&logoColor=white)](https://bridgeke-api.onrender.com/api/health)
+![Status](https://img.shields.io/badge/Status-🟢_Online-brightgreen)
+
+**Tech Stack:**
+![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?logo=node.js&style=flat-square)
+![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&style=flat-square)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&style=flat-square)
 
 ---
 
@@ -112,12 +119,16 @@ npm run dev  # Starts on http://localhost:3000
 ```
 
 ### 3. Setup Frontend (new terminal)
+```bash
 cd frontend
 npm install
 npm run dev  # Starts on http://localhost:5173
+```
 
 ### 4. Test API
+```bash
 curl http://localhost:3000/api/health
+```
 
 ---
 
