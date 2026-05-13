@@ -95,7 +95,7 @@ export default function Layout() {
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-gray-100 via-blue-50 to-indigo-50 border-t border-gray-200 py-8 text-center">
-        <p className="text-gray-700 font-medium">© 2026 BridgeKE Kenya 🇰🇪 | Built with ❤️ by IYF Weekend Academy</p>
+        <p className="text-gray-700 font-medium">© 2026 BridgeKE Kenya 🇰🇪 </p>
         <p className="text-gray-500 text-sm mt-2">Empowering Kenyan Youth Through Opportunities</p>
       </footer>
     </div>
