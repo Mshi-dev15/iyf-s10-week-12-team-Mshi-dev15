@@ -31,7 +31,7 @@ export default function CreatePost() {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
       }
       const newPost = await createPost(postData)
-      navigate(`/posts/${newPost._id}`)
+            navigate(`/posts/${newPost.data.data._id}`)  // ✅ Correct: unwrap axios response
     } catch (err) {
       setError(err.response?.data?.error?.message || err.message || 'Failed to create post')
     } finally {
